@@ -1,0 +1,79 @@
+import { randomBytes } from 'node:crypto'
+import type { DatabaseSync } from 'node:sqlite'
+
+export type MonitorType = 'http' | 'tcp' | 'heartbeat'
+
+export interface Monitor {
+  id: number
+  name: string
+  type: MonitorType
+  /** URL for http, host:port for tcp, secret token for heartbeat. */
+  target: string
+  interval_s: number
+  timeout_ms: number
+  created_at: number
+}
+
+export interface Check {
+  at: number
+  ok: number
+  latency_ms: number | null
+  detail: string | null
+}
+
+export interface NewMonitor {
+  name: string
+  type: MonitorType
+  target?: string
+  interval_s?: number
+  timeout_ms?: number
+}
+
+export function createMonitor(db: DatabaseSync, input: NewMonitor, now = Date.now()): Monitor {
+  const target = input.type === 'heartbeat' ? randomBytes(16).toString('hex') : (input.target ?? '')
+  const { lastInsertRowid } = db
+    .prepare('INSERT INTO monitors (name, type, target, interval_s, timeout_ms, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+    .run(input.name, input.type, target, input.interval_s ?? 60, input.timeout_ms ?? 10_000, now)
+  return getMonitor(db, Number(lastInsertRowid))!
+}
+
+export function getMonitor(db: DatabaseSync, id: number): Monitor | undefined {
+  return db.prepare('SELECT * FROM monitors WHERE id = ?').get(id) as Monitor | undefined
+}
+
+export function listMonitors(db: DatabaseSync): Monitor[] {
+  return db.prepare('SELECT * FROM monitors ORDER BY name').all() as unknown as Monitor[]
+}
+
+export function deleteMonitor(db: DatabaseSync, id: number): boolean {
+  return db.prepare('DELETE FROM monitors WHERE id = ?').run(id).changes > 0
+}
+
+export function recordCheck(db: DatabaseSync, monitorId: number, ok: boolean, latencyMs: number | null, detail: string, at = Date.now()): void {
+  db.prepare('INSERT INTO checks (monitor_id, at, ok, latency_ms, detail) VALUES (?, ?, ?, ?, ?)').run(monitorId, at, ok ? 1 : 0, latencyMs, detail)
+}
+
+export function lastCheck(db: DatabaseSync, monitorId: number): Check | undefined {
+  return db.prepare('SELECT at, ok, latency_ms, detail FROM checks WHERE monitor_id = ? ORDER BY at DESC LIMIT 1').get(monitorId) as
+    | Check
+    | undefined
+}
+
+/** Monitors whose last check is older than their interval (heartbeats are judged separately). */
+export function dueMonitors(db: DatabaseSync, now = Date.now()): Monitor[] {
+  return db
+    .prepare(
+      `SELECT m.* FROM monitors m
+       LEFT JOIN (SELECT monitor_id, MAX(at) AS last FROM checks GROUP BY monitor_id) c ON c.monitor_id = m.id
+       WHERE c.last IS NULL OR c.last + m.interval_s * 1000 <= ?`,
+    )
+    .all(now) as unknown as Monitor[]
+}
+
+export function findHeartbeat(db: DatabaseSync, token: string): Monitor | undefined {
+  return db.prepare(`SELECT * FROM monitors WHERE type = 'heartbeat' AND target = ?`).get(token) as Monitor | undefined
+}
+
+export function pruneChecks(db: DatabaseSync, olderThan: number): number {
+  return Number(db.prepare('DELETE FROM checks WHERE at < ?').run(olderThan).changes)
+}
