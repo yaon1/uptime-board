@@ -1,0 +1,14 @@
+services:
+  uptime:
+    build: .
+    ports: ['3000:3000']
+    environment:
+      NUXT_ADMIN_TOKEN: ${NUXT_ADMIN_TOKEN:?set NUXT_ADMIN_TOKEN}
+      NUXT_TELEGRAM_BOT_TOKEN: ${NUXT_TELEGRAM_BOT_TOKEN:-}
+      NUXT_TELEGRAM_CHAT_ID: ${NUXT_TELEGRAM_CHAT_ID:-}
+      NUXT_PUBLIC_TITLE: ${NUXT_PUBLIC_TITLE:-Status}
+    volumes: ['uptime-data:/data']
+    restart: unless-stopped
+
+volumes:
+  uptime-data:
