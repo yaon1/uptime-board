@@ -20,6 +20,7 @@ const MIGRATIONS = [
      detail TEXT
    )`,
   `CREATE INDEX checks_monitor_at ON checks (monitor_id, at)`,
+  `ALTER TABLE monitors ADD COLUMN paused INTEGER NOT NULL DEFAULT 0`,
 ]
 
 /** Opens the database and applies pending migrations tracked by PRAGMA user_version. */

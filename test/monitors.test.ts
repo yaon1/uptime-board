@@ -1,7 +1,7 @@
 import { beforeEach, expect, it } from 'vitest'
 import type { DatabaseSync } from 'node:sqlite'
 import { openDatabase } from '../server/utils/db'
-import { createMonitor, dueMonitors, findHeartbeat, lastCheck, pruneChecks, recordCheck } from '../server/utils/monitors'
+import { createMonitor, dueMonitors, findHeartbeat, lastCheck, pruneChecks, recordCheck, updateMonitor } from '../server/utils/monitors'
 
 let db: DatabaseSync
 beforeEach(() => (db = openDatabase(':memory:')))
@@ -27,4 +27,14 @@ it('prunes old checks', () => {
   recordCheck(db, m.id, true, 1, '', 1)
   recordCheck(db, m.id, true, 1, '', 100)
   expect(pruneChecks(db, 50)).toBe(1)
+})
+
+it('updates fields and skips paused monitors when scheduling', () => {
+  const m = createMonitor(db, { name: 'site', type: 'http', target: 'https://x' })
+  expect(updateMonitor(db, m.id, { name: 'Site', interval_s: 300 })).toMatchObject({ name: 'Site', interval_s: 300 })
+
+  updateMonitor(db, m.id, { paused: true })
+  expect(dueMonitors(db, 10_000_000)).toEqual([])
+  updateMonitor(db, m.id, { paused: false })
+  expect(dueMonitors(db, 10_000_000).map((d) => d.id)).toEqual([m.id])
 })

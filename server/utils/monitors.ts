@@ -12,6 +12,8 @@ export interface Monitor {
   interval_s: number
   timeout_ms: number
   created_at: number
+  /** 1 while paused: no probes, no alerts, shown as paused on the status page. */
+  paused: number
 }
 
 export interface Check {
@@ -45,6 +47,20 @@ export function listMonitors(db: DatabaseSync): Monitor[] {
   return db.prepare('SELECT * FROM monitors ORDER BY name').all() as unknown as Monitor[]
 }
 
+export function updateMonitor(db: DatabaseSync, id: number, changes: Partial<NewMonitor> & { paused?: boolean }): Monitor | undefined {
+  const columns = Object.entries({
+    name: changes.name,
+    target: changes.type === 'heartbeat' ? undefined : changes.target,
+    interval_s: changes.interval_s,
+    timeout_ms: changes.timeout_ms,
+    paused: changes.paused === undefined ? undefined : changes.paused ? 1 : 0,
+  }).filter(([, v]) => v !== undefined)
+  if (columns.length > 0) {
+    db.prepare(`UPDATE monitors SET ${columns.map(([k]) => `${k} = ?`).join(', ')} WHERE id = ?`).run(...columns.map(([, v]) => v as string | number), id)
+  }
+  return getMonitor(db, id)
+}
+
 export function deleteMonitor(db: DatabaseSync, id: number): boolean {
   return db.prepare('DELETE FROM monitors WHERE id = ?').run(id).changes > 0
 }
@@ -65,7 +81,7 @@ export function dueMonitors(db: DatabaseSync, now = Date.now()): Monitor[] {
     .prepare(
       `SELECT m.* FROM monitors m
        LEFT JOIN (SELECT monitor_id, MAX(at) AS last FROM checks GROUP BY monitor_id) c ON c.monitor_id = m.id
-       WHERE c.last IS NULL OR c.last + m.interval_s * 1000 <= ?`,
+       WHERE m.paused = 0 AND (c.last IS NULL OR c.last + m.interval_s * 1000 <= ?)`,
     )
     .all(now) as unknown as Monitor[]
 }
