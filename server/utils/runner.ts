@@ -37,7 +37,7 @@ export async function checkHeartbeats(db: DatabaseSync, notify: Notifier, now = 
   const stale = db
     .prepare(
       `SELECT m.* FROM monitors m
-       WHERE m.type = 'heartbeat'
+       WHERE m.type = 'heartbeat' AND m.paused = 0
          AND COALESCE((SELECT MAX(at) FROM checks c WHERE c.monitor_id = m.id), m.created_at) + m.interval_s * 1000 + m.timeout_ms <= ?`,
     )
     .all(now) as unknown as Monitor[]

@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite'
 import { beforeEach, expect, it } from 'vitest'
 import { openDatabase } from '../server/utils/db'
-import { createMonitor, recordCheck } from '../server/utils/monitors'
+import { createMonitor, recordCheck, updateMonitor } from '../server/utils/monitors'
 import { runDueMonitors } from '../server/utils/runner'
 
 let db: DatabaseSync
@@ -33,4 +33,11 @@ it('marks silent heartbeats down once and recovers on ping', async () => {
   recordCheck(db, hb.id, true, null, 'ping', 500_000)
   await runDueMonitors(db, notify, undefined, 520_000)
   expect(sent).toHaveLength(1)
+})
+
+it('does not alert on paused heartbeats', async () => {
+  const hb = createMonitor(db, { name: 'cron', type: 'heartbeat', interval_s: 60, timeout_ms: 1000 }, 0)
+  updateMonitor(db, hb.id, { paused: true })
+  await runDueMonitors(db, notify, undefined, 1_000_000)
+  expect(sent).toEqual([])
 })
