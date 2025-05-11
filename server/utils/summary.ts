@@ -11,7 +11,7 @@ export interface MonitorSummary {
   id: number
   name: string
   type: Monitor['type']
-  status: 'up' | 'down' | 'pending'
+  status: 'up' | 'down' | 'pending' | 'paused'
   detail: string | null
   latencyMs: number | null
   uptime24h: number | null
@@ -38,7 +38,7 @@ export function summarize(db: DatabaseSync, monitor: Monitor, days = 90, now = D
     id: monitor.id,
     name: monitor.name,
     type: monitor.type,
-    status: last === undefined ? 'pending' : last.ok ? 'up' : 'down',
+    status: monitor.paused ? 'paused' : last === undefined ? 'pending' : last.ok ? 'up' : 'down',
     detail: last?.detail ?? null,
     latencyMs: last?.latency_ms ?? null,
     uptime24h: uptime(db, monitor.id, now - DAY),

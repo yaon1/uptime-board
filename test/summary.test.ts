@@ -21,3 +21,10 @@ it('computes status, rolling uptime and daily buckets', () => {
     { day: '2026-10-19', uptime: 100 },
   ])
 })
+
+it('reports paused monitors as paused', () => {
+  const db = openDatabase(':memory:')
+  const m = createMonitor(db, { name: 'site', type: 'http', target: 'https://x' }, 0)
+  recordCheck(db, m.id, false, null, 'HTTP 500', 1)
+  expect(summarize(db, { ...m, paused: 1 }, 1, 2).status).toBe('paused')
+})

@@ -66,6 +66,7 @@ h1 { font-size: 28px; margin: 0 0 20px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--empty); }
 .dot.up { background: var(--up); }
 .dot.down { background: var(--down); }
+.dot.paused { background: var(--muted); }
 .detail { margin: 8px 0 0; color: var(--down); font-size: 13px; }
 .empty { color: var(--muted); }
 footer { margin-top: 16px; color: var(--muted); font-size: 13px; text-align: center; }
