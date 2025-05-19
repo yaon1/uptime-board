@@ -6,13 +6,34 @@ export interface ProbeResult {
   detail: string
 }
 
-export async function probeHttp(url: string, timeoutMs: number): Promise<ProbeResult> {
+export interface HttpExpectations {
+  /** Accepted status codes, e.g. "200-299,301". Default: anything below 400. */
+  status?: string | null
+  /** Text that must appear in the response body, e.g. a footer that only renders when the app works. */
+  keyword?: string | null
+}
+
+/** Parses "200-299,301" into a matcher; null/empty accepts < 400. */
+export function statusMatcher(spec: string | null | undefined): (status: number) => boolean {
+  if (!spec?.trim()) return (status) => status < 400
+  const ranges = spec.split(',').map((part) => {
+    const [from, to] = part.trim().split('-').map(Number)
+    if (!Number.isInteger(from) || (to !== undefined && !Number.isInteger(to))) throw new Error(`Invalid status spec "${spec}"`)
+    return [from!, to ?? from!] as const
+  })
+  return (status) => ranges.some(([from, to]) => status >= from && status <= to)
+}
+
+export async function probeHttp(url: string, timeoutMs: number, expect: HttpExpectations = {}): Promise<ProbeResult> {
   const started = performance.now()
   try {
     const res = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(timeoutMs), headers: { 'user-agent': 'uptime-board' } })
-    await res.body?.cancel()
+    // Only download the body when we need to search it; otherwise cancel to save bandwidth.
+    const body = expect.keyword ? await res.text() : (await res.body?.cancel(), '')
     const latencyMs = Math.round(performance.now() - started)
-    return { ok: res.status < 400, latencyMs, detail: `HTTP ${res.status}` }
+    if (!statusMatcher(expect.status)(res.status)) return { ok: false, latencyMs, detail: `HTTP ${res.status}` }
+    if (expect.keyword && !body.includes(expect.keyword)) return { ok: false, latencyMs, detail: `HTTP ${res.status}, "${expect.keyword}" not found` }
+    return { ok: true, latencyMs, detail: `HTTP ${res.status}` }
   } catch (error) {
     return { ok: false, latencyMs: null, detail: describe(error) }
   }
