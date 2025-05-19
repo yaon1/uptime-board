@@ -1,3 +1,4 @@
+import { statusMatcher } from './probe'
 import type { MonitorType, NewMonitor } from './monitors'
 
 const TYPES: MonitorType[] = ['http', 'tcp', 'heartbeat']
@@ -38,6 +39,20 @@ export function validateMonitor(body: Record<string, unknown> | null | undefined
     const timeout = Number(input.timeout_ms ?? 10_000)
     if (!Number.isInteger(timeout) || timeout < 100 || timeout > 60_000) throw new ValidationError('timeout_ms must be between 100 and 60000')
     out.timeout_ms = timeout
+  }
+  if (input.expect_status !== undefined) {
+    const spec = input.expect_status === null || input.expect_status === '' ? null : String(input.expect_status)
+    if (spec !== null) {
+      try {
+        statusMatcher(spec)
+      } catch {
+        throw new ValidationError('expect_status must look like "200-299,301"')
+      }
+    }
+    out.expect_status = spec
+  }
+  if (input.expect_keyword !== undefined) {
+    out.expect_keyword = typeof input.expect_keyword === 'string' && input.expect_keyword !== '' ? input.expect_keyword : null
   }
   return out
 }

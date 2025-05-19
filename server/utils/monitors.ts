@@ -14,6 +14,8 @@ export interface Monitor {
   created_at: number
   /** 1 while paused: no probes, no alerts, shown as paused on the status page. */
   paused: number
+  expect_status: string | null
+  expect_keyword: string | null
 }
 
 export interface Check {
@@ -29,13 +31,15 @@ export interface NewMonitor {
   target?: string
   interval_s?: number
   timeout_ms?: number
+  expect_status?: string | null
+  expect_keyword?: string | null
 }
 
 export function createMonitor(db: DatabaseSync, input: NewMonitor, now = Date.now()): Monitor {
   const target = input.type === 'heartbeat' ? randomBytes(16).toString('hex') : (input.target ?? '')
   const { lastInsertRowid } = db
-    .prepare('INSERT INTO monitors (name, type, target, interval_s, timeout_ms, created_at) VALUES (?, ?, ?, ?, ?, ?)')
-    .run(input.name, input.type, target, input.interval_s ?? 60, input.timeout_ms ?? 10_000, now)
+    .prepare('INSERT INTO monitors (name, type, target, interval_s, timeout_ms, expect_status, expect_keyword, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+    .run(input.name, input.type, target, input.interval_s ?? 60, input.timeout_ms ?? 10_000, input.expect_status ?? null, input.expect_keyword ?? null, now)
   return getMonitor(db, Number(lastInsertRowid))!
 }
 
@@ -53,6 +57,8 @@ export function updateMonitor(db: DatabaseSync, id: number, changes: Partial<New
     target: changes.type === 'heartbeat' ? undefined : changes.target,
     interval_s: changes.interval_s,
     timeout_ms: changes.timeout_ms,
+    expect_status: changes.expect_status,
+    expect_keyword: changes.expect_keyword,
     paused: changes.paused === undefined ? undefined : changes.paused ? 1 : 0,
   }).filter(([, v]) => v !== undefined)
   if (columns.length > 0) {
