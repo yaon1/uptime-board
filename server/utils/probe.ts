@@ -1,4 +1,5 @@
 import { connect } from 'node:net'
+import { connect as tlsConnect } from 'node:tls'
 
 export interface ProbeResult {
   ok: boolean
@@ -66,4 +67,23 @@ function describe(error: unknown): string {
     return cause ? `${cause}: ${error.message}` : error.message
   }
   return String(error)
+}
+
+/** Expiry of the TLS certificate served for an https URL, or null for plain http / errors. */
+export function certificateExpiry(url: string, timeoutMs = 5000): Promise<Date | null> {
+  const { protocol, hostname, port } = new URL(url)
+  if (protocol !== 'https:') return Promise.resolve(null)
+  return new Promise((resolve) => {
+    // Read the certificate even if it's invalid: an expired cert is exactly what we want to report.
+    const socket = tlsConnect({ host: hostname, port: Number(port || 443), servername: hostname, rejectUnauthorized: false, timeout: timeoutMs }, () => {
+      const cert = socket.getPeerCertificate()
+      socket.end()
+      resolve(cert?.valid_to ? new Date(cert.valid_to) : null)
+    })
+    socket.once('error', () => resolve(null))
+    socket.once('timeout', () => {
+      socket.destroy()
+      resolve(null)
+    })
+  })
 }
