@@ -51,6 +51,11 @@ export function validateMonitor(body: Record<string, unknown> | null | undefined
     }
     out.expect_status = spec
   }
+  if (input.alert_after !== undefined) {
+    const n = Number(input.alert_after)
+    if (!Number.isInteger(n) || n < 1 || n > 10) throw new ValidationError('alert_after must be between 1 and 10')
+    out.alert_after = n
+  }
   if (input.expect_keyword !== undefined) {
     out.expect_keyword = typeof input.expect_keyword === 'string' && input.expect_keyword !== '' ? input.expect_keyword : null
   }

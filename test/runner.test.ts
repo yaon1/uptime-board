@@ -41,3 +41,14 @@ it('does not alert on paused heartbeats', async () => {
   await runDueMonitors(db, notify, undefined, 1_000_000)
   expect(sent).toEqual([])
 })
+
+it('waits for alert_after consecutive failures before alerting', async () => {
+  createMonitor(db, { name: 'Flaky', type: 'http', target: 'https://x', interval_s: 60, alert_after: 3 }, 0)
+  const outcomes = [false, true, false, false, false, false, true]
+  let t = 0
+  for (const ok of outcomes) {
+    await runDueMonitors(db, notify, async () => ({ ok, latencyMs: 1, detail: ok ? 'HTTP 200' : 'Timeout' }), t)
+    t += 60_000
+  }
+  expect(sent).toEqual(['🔴 <b>Flaky</b> is DOWN\nTimeout', '🟢 <b>Flaky</b> is back UP after 4 min'])
+})

@@ -16,6 +16,8 @@ export interface Monitor {
   paused: number
   expect_status: string | null
   expect_keyword: string | null
+  /** Consecutive failures needed before alerting; filters out one-off network blips. */
+  alert_after: number
 }
 
 export interface Check {
@@ -33,6 +35,7 @@ export interface NewMonitor {
   timeout_ms?: number
   expect_status?: string | null
   expect_keyword?: string | null
+  alert_after?: number
 }
 
 export function createMonitor(db: DatabaseSync, input: NewMonitor, now = Date.now()): Monitor {
@@ -40,6 +43,7 @@ export function createMonitor(db: DatabaseSync, input: NewMonitor, now = Date.no
   const { lastInsertRowid } = db
     .prepare('INSERT INTO monitors (name, type, target, interval_s, timeout_ms, expect_status, expect_keyword, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
     .run(input.name, input.type, target, input.interval_s ?? 60, input.timeout_ms ?? 10_000, input.expect_status ?? null, input.expect_keyword ?? null, now)
+  if (input.alert_after !== undefined) db.prepare('UPDATE monitors SET alert_after = ? WHERE id = ?').run(input.alert_after, Number(lastInsertRowid))
   return getMonitor(db, Number(lastInsertRowid))!
 }
 
@@ -59,6 +63,7 @@ export function updateMonitor(db: DatabaseSync, id: number, changes: Partial<New
     timeout_ms: changes.timeout_ms,
     expect_status: changes.expect_status,
     expect_keyword: changes.expect_keyword,
+    alert_after: changes.alert_after,
     paused: changes.paused === undefined ? undefined : changes.paused ? 1 : 0,
   }).filter(([, v]) => v !== undefined)
   if (columns.length > 0) {

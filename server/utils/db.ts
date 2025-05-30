@@ -23,6 +23,8 @@ const MIGRATIONS = [
   `ALTER TABLE monitors ADD COLUMN paused INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE monitors ADD COLUMN expect_status TEXT`,
   `ALTER TABLE monitors ADD COLUMN expect_keyword TEXT`,
+  `ALTER TABLE monitors ADD COLUMN alert_after INTEGER NOT NULL DEFAULT 1`,
+  `CREATE TABLE alerts (monitor_id INTEGER PRIMARY KEY REFERENCES monitors(id) ON DELETE CASCADE, down INTEGER NOT NULL, since INTEGER NOT NULL)`,
 ]
 
 /** Opens the database and applies pending migrations tracked by PRAGMA user_version. */

@@ -23,13 +23,31 @@ function lastFlip(db: DatabaseSync, monitorId: number, ok: number): number | und
 }
 
 /** Records a result and notifies when the status flips. */
+/**
+ * Records a result and notifies when the alert state flips. Alert state is tracked
+ * separately from raw checks so a monitor must fail `alert_after` times in a row
+ * before anyone is paged, and recovers on the first success.
+ */
 export async function applyResult(db: DatabaseSync, monitor: Monitor, result: ProbeResult, notify: Notifier, now = Date.now()) {
-  const previous = lastCheck(db, monitor.id)
-  const downSince = previous && !previous.ok ? lastFlip(db, monitor.id, 0) : undefined
   recordCheck(db, monitor.id, result.ok, result.latencyMs, result.detail, now)
+  const alert = db.prepare('SELECT down, since FROM alerts WHERE monitor_id = ?').get(monitor.id) as { down: number; since: number } | undefined
 
-  const changed = previous === undefined ? !result.ok : Boolean(previous.ok) !== result.ok
-  if (changed) await notify(formatTransition(monitor.name, result.ok, result.detail, downSince, now))
+  if (result.ok) {
+    if (alert?.down) {
+      db.prepare('UPDATE alerts SET down = 0, since = ? WHERE monitor_id = ?').run(now, monitor.id)
+      await notify(formatTransition(monitor.name, true, result.detail, alert.since, now))
+    }
+    return
+  }
+
+  if (alert?.down) return
+  const recent = db.prepare('SELECT ok FROM checks WHERE monitor_id = ? ORDER BY at DESC LIMIT ?').all(monitor.id, monitor.alert_after ?? 1) as { ok: number }[]
+  if (recent.length >= (monitor.alert_after ?? 1) && recent.every((c) => !c.ok)) {
+    // Downtime starts at the first failure of the streak, not at the alert.
+    const firstFailure = (lastFlip(db, monitor.id, 0) ?? now)
+    db.prepare('INSERT INTO alerts (monitor_id, down, since) VALUES (?, 1, ?) ON CONFLICT(monitor_id) DO UPDATE SET down = 1, since = excluded.since').run(monitor.id, firstFailure)
+    await notify(formatTransition(monitor.name, false, result.detail))
+  }
 }
 
 /** Heartbeats that have not pinged within interval + grace are marked down once. */
