@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     adminToken: '',
     telegramBotToken: '',
     telegramChatId: '',
+    certWarnDays: 14,
     public: { title: 'Status' },
   },
   nitro: {

@@ -39,6 +39,7 @@ const fmt = (u: number | null) => (u === null ? '—' : `${u.toFixed(2)}%`)
           <span class="meta">
             <template v-if="m.latencyMs !== null">{{ m.latencyMs }} ms · </template>
             24h {{ fmt(m.uptime24h) }} · 30d {{ fmt(m.uptime30d) }}
+            <template v-if="m.certDaysLeft !== null && m.certDaysLeft <= 30"> · <span class="cert">TLS: {{ m.certDaysLeft }} d</span></template>
           </span>
         </div>
         <UptimeBars :days="m.days" />
@@ -69,5 +70,6 @@ h1 { font-size: 28px; margin: 0 0 20px; }
 .dot.paused { background: var(--muted); }
 .detail { margin: 8px 0 0; color: var(--down); font-size: 13px; }
 .empty { color: var(--muted); }
+.cert { color: var(--partial); font-weight: 600; }
 footer { margin-top: 16px; color: var(--muted); font-size: 13px; text-align: center; }
 </style>

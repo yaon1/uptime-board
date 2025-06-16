@@ -24,6 +24,9 @@ const MIGRATIONS = [
   `ALTER TABLE monitors ADD COLUMN expect_status TEXT`,
   `ALTER TABLE monitors ADD COLUMN expect_keyword TEXT`,
   `ALTER TABLE monitors ADD COLUMN alert_after INTEGER NOT NULL DEFAULT 1`,
+  `ALTER TABLE monitors ADD COLUMN cert_expires_at INTEGER`,
+  `ALTER TABLE monitors ADD COLUMN cert_checked_at INTEGER`,
+  `ALTER TABLE monitors ADD COLUMN cert_warned_for INTEGER`,
   `CREATE TABLE alerts (monitor_id INTEGER PRIMARY KEY REFERENCES monitors(id) ON DELETE CASCADE, down INTEGER NOT NULL, since INTEGER NOT NULL)`,
 ]
 

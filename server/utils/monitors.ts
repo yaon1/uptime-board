@@ -18,6 +18,11 @@ export interface Monitor {
   expect_keyword: string | null
   /** Consecutive failures needed before alerting; filters out one-off network blips. */
   alert_after: number
+  /** Unix ms when the https certificate expires, refreshed daily. */
+  cert_expires_at: number | null
+  cert_checked_at: number | null
+  /** Expiry we already warned about, so each certificate triggers one warning. */
+  cert_warned_for: number | null
 }
 
 export interface Check {

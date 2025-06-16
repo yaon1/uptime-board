@@ -16,6 +16,7 @@ export interface MonitorSummary {
   latencyMs: number | null
   uptime24h: number | null
   uptime30d: number | null
+  certDaysLeft: number | null
   days: DayBucket[]
 }
 
@@ -43,6 +44,7 @@ export function summarize(db: DatabaseSync, monitor: Monitor, days = 90, now = D
     latencyMs: last?.latency_ms ?? null,
     uptime24h: uptime(db, monitor.id, now - DAY),
     uptime30d: uptime(db, monitor.id, now - 30 * DAY),
+    certDaysLeft: monitor.cert_expires_at ? Math.floor((monitor.cert_expires_at - now) / DAY) : null,
     days: Array.from({ length: days }, (_, i) => {
       const dayIndex = start / DAY + i
       const u = byDay.get(dayIndex)

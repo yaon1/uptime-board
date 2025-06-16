@@ -1,3 +1,4 @@
+import { checkCertificates } from '../../utils/certificates'
 import { pruneChecks } from '../../utils/monitors'
 import { runDueMonitors } from '../../utils/runner'
 import { telegramNotifier } from '../../utils/notify'
@@ -9,7 +10,9 @@ export default defineTask({
   async run() {
     const config = useRuntimeConfig()
     const db = useDatabase()
-    const checked = await runDueMonitors(db, telegramNotifier(config.telegramBotToken, config.telegramChatId))
+    const notify = telegramNotifier(config.telegramBotToken, config.telegramChatId)
+    const checked = await runDueMonitors(db, notify)
+    await checkCertificates(db, notify, Number(config.certWarnDays))
     const pruned = pruneChecks(db, Date.now() - RETENTION_MS)
     return { result: { checked, pruned } }
   },
