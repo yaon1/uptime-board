@@ -44,6 +44,7 @@ const fmt = (u: number | null) => (u === null ? '—' : `${u.toFixed(2)}%`)
           </span>
         </div>
         <UptimeBars :days="m.days" />
+        <LatencySparkline v-if="m.type !== 'heartbeat'" :monitor-id="m.id" />
         <p v-if="m.status === 'down'" class="detail">{{ m.detail }}</p>
       </li>
     </ul>
