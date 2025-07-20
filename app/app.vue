@@ -3,10 +3,11 @@ import './assets/main.css'
 
 const { title } = useRuntimeConfig().public
 const { data, refresh } = await useFetch('/api/status')
+const { data: history, refresh: refreshHistory } = await useFetch('/api/incidents', { default: () => [] })
 
 useHead({ title })
 let timer: ReturnType<typeof setInterval> | undefined
-onMounted(() => (timer = setInterval(refresh, 30_000)))
+onMounted(() => (timer = setInterval(() => (refresh(), refreshHistory()), 30_000)))
 onBeforeUnmount(() => clearInterval(timer))
 
 const banner = computed(() => {
@@ -46,6 +47,8 @@ const fmt = (u: number | null) => (u === null ? '—' : `${u.toFixed(2)}%`)
         <p v-if="m.status === 'down'" class="detail">{{ m.detail }}</p>
       </li>
     </ul>
+
+    <IncidentList :incidents="history" />
 
     <footer v-if="data">Updated {{ new Date(data.generatedAt).toLocaleTimeString() }} · 90 days</footer>
   </main>
