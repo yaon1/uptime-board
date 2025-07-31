@@ -1,4 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
+import { inMaintenance } from './maintenance'
 import { dueMonitors, lastCheck, recordCheck, type Monitor } from './monitors'
 import { formatTransition, type Notifier } from './notify'
 import { probeHttp, probeTcp, type ProbeResult } from './probe'
@@ -29,6 +30,8 @@ function lastFlip(db: DatabaseSync, monitorId: number, ok: number): number | und
  * before anyone is paged, and recovers on the first success.
  */
 export async function applyResult(db: DatabaseSync, monitor: Monitor, result: ProbeResult, notify: Notifier, now = Date.now()) {
+  // Planned work: keep recording checks (for the history) but don't page anyone.
+  if (inMaintenance(db, monitor.id, now)) notify = async () => {}
   recordCheck(db, monitor.id, result.ok, result.latencyMs, result.detail, now)
   const alert = db.prepare('SELECT down, since FROM alerts WHERE monitor_id = ?').get(monitor.id) as { down: number; since: number } | undefined
 

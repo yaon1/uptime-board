@@ -52,3 +52,12 @@ it('waits for alert_after consecutive failures before alerting', async () => {
   }
   expect(sent).toEqual(['🔴 <b>Flaky</b> is DOWN\nTimeout', '🟢 <b>Flaky</b> is back UP after 4 min'])
 })
+
+it('stays quiet during maintenance windows', async () => {
+  const m = createMonitor(db, { name: 'API', type: 'http', target: 'https://x', interval_s: 60 }, 0)
+  const { scheduleMaintenance } = await import('../server/utils/maintenance')
+  scheduleMaintenance(db, { monitor_id: m.id, starts_at: 0, ends_at: 120_000, note: 'deploy' })
+  await runDueMonitors(db, notify, async () => ({ ok: false, latencyMs: null, detail: 'HTTP 503' }), 0)
+  await runDueMonitors(db, notify, async () => ({ ok: true, latencyMs: 1, detail: 'HTTP 200' }), 60_000)
+  expect(sent).toEqual([])
+})
