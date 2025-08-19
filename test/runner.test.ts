@@ -61,3 +61,12 @@ it('stays quiet during maintenance windows', async () => {
   await runDueMonitors(db, notify, async () => ({ ok: true, latencyMs: 1, detail: 'HTTP 200' }), 60_000)
   expect(sent).toEqual([])
 })
+
+it('does not announce a recovery for an outage that happened during maintenance', async () => {
+  const m = createMonitor(db, { name: 'DB', type: 'http', target: 'https://x', interval_s: 60 }, 0)
+  const { scheduleMaintenance } = await import('../server/utils/maintenance')
+  scheduleMaintenance(db, { monitor_id: m.id, starts_at: 0, ends_at: 60_000, note: 'migration' })
+  await runDueMonitors(db, notify, async () => ({ ok: false, latencyMs: null, detail: 'HTTP 503' }), 0)
+  await runDueMonitors(db, notify, async () => ({ ok: true, latencyMs: 1, detail: 'HTTP 200' }), 60_000)
+  expect(sent).toEqual([])
+})

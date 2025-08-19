@@ -30,9 +30,10 @@ function lastFlip(db: DatabaseSync, monitorId: number, ok: number): number | und
  * before anyone is paged, and recovers on the first success.
  */
 export async function applyResult(db: DatabaseSync, monitor: Monitor, result: ProbeResult, notify: Notifier, now = Date.now()) {
-  // Planned work: keep recording checks (for the history) but don't page anyone.
-  if (inMaintenance(db, monitor.id, now)) notify = async () => {}
   recordCheck(db, monitor.id, result.ok, result.latencyMs, result.detail, now)
+  // Planned work: keep recording checks for the history, but leave the alert state alone,
+  // otherwise a failure inside the window would page "back UP" after it without a "DOWN".
+  if (inMaintenance(db, monitor.id, now)) return
   const alert = db.prepare('SELECT down, since FROM alerts WHERE monitor_id = ?').get(monitor.id) as { down: number; since: number } | undefined
 
   if (result.ok) {
