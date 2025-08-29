@@ -28,7 +28,7 @@ export async function checkCertificates(
     const daysLeft = Math.floor((expiry - now) / DAY)
     if (daysLeft <= warnDays && m.cert_warned_for !== expiry) {
       db.prepare('UPDATE monitors SET cert_warned_for = ? WHERE id = ?').run(expiry, m.id)
-      await notify(daysLeft < 0 ? `🔐 <b>${m.name}</b>: TLS certificate expired` : `🔐 <b>${m.name}</b>: TLS certificate expires in ${daysLeft} days`)
+      await notify({ kind: 'cert', monitor: m.name, daysLeft, at: now })
     }
   }
 }

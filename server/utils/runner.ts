@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite'
 import { inMaintenance } from './maintenance'
 import { dueMonitors, lastCheck, recordCheck, type Monitor } from './monitors'
-import { formatTransition, type Notifier } from './notify'
+import type { Notifier } from './notify'
 import { probeHttp, probeTcp, type ProbeResult } from './probe'
 
 export type Prober = (monitor: Monitor) => Promise<ProbeResult>
@@ -39,7 +39,7 @@ export async function applyResult(db: DatabaseSync, monitor: Monitor, result: Pr
   if (result.ok) {
     if (alert?.down) {
       db.prepare('UPDATE alerts SET down = 0, since = ? WHERE monitor_id = ?').run(now, monitor.id)
-      await notify(formatTransition(monitor.name, true, result.detail, alert.since, now))
+      await notify({ kind: 'up', monitor: monitor.name, detail: result.detail, at: now, downtimeMs: now - alert.since })
     }
     return
   }
@@ -50,7 +50,7 @@ export async function applyResult(db: DatabaseSync, monitor: Monitor, result: Pr
     // Downtime starts at the first failure of the streak, not at the alert.
     const firstFailure = (lastFlip(db, monitor.id, 0) ?? now)
     db.prepare('INSERT INTO alerts (monitor_id, down, since) VALUES (?, 1, ?) ON CONFLICT(monitor_id) DO UPDATE SET down = 1, since = excluded.since').run(monitor.id, firstFailure)
-    await notify(formatTransition(monitor.name, false, result.detail))
+    await notify({ kind: 'down', monitor: monitor.name, detail: result.detail, at: now })
   }
 }
 

@@ -1,3 +1,4 @@
+import { formatTelegram, type AlertEvent } from '../server/utils/notify'
 import type { DatabaseSync } from 'node:sqlite'
 import { beforeEach, expect, it } from 'vitest'
 import { checkCertificates } from '../server/utils/certificates'
@@ -7,7 +8,7 @@ import { createMonitor } from '../server/utils/monitors'
 const DAY = 86_400_000
 let db: DatabaseSync
 let sent: string[]
-const notify = async (t: string) => void sent.push(t)
+const notify = async (e: AlertEvent) => void sent.push(formatTelegram(e))
 
 beforeEach(() => {
   db = openDatabase(':memory:')
