@@ -7,6 +7,9 @@ export default defineNuxtConfig({
     telegramBotToken: '',
     telegramChatId: '',
     certWarnDays: 14,
+    slackWebhookUrl: '',
+    webhookUrl: '',
+    webhookSecret: '',
     public: { title: 'Status' },
   },
   nitro: {
