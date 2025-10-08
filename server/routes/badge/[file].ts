@@ -8,7 +8,9 @@ import { summarize } from '../../utils/summary'
  */
 export default defineEventHandler((event) => {
   const db = useDatabase()
-  const monitor = getMonitor(db, Number(getRouterParam(event, 'id')?.replace(/\.svg$/, '')))
+  // Nitro can't match a suffix after a param ("[id].svg"), so parse "3.svg" here.
+  const match = /^(\d+)\.svg$/.exec(getRouterParam(event, 'file') ?? '')
+  const monitor = match ? getMonitor(db, Number(match[1])) : undefined
   if (!monitor) throw createError({ statusCode: 404 })
   const s = summarize(db, monitor, 30)
 
