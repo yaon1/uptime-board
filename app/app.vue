@@ -8,7 +8,7 @@ const { data: maintenance } = await useFetch('/api/maintenance', { default: () =
 const range = (m: { starts_at: number; ends_at: number }) =>
   `${new Date(m.starts_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })} – ${new Date(m.ends_at).toLocaleTimeString(undefined, { timeStyle: 'short' })}`
 
-useHead({ title })
+useHead({ title, link: [{ rel: 'alternate', type: 'application/rss+xml', title: 'Incidents', href: '/feed.xml' }] })
 let timer: ReturnType<typeof setInterval> | undefined
 onMounted(() => (timer = setInterval(() => (refresh(), refreshHistory()), 30_000)))
 onBeforeUnmount(() => clearInterval(timer))
@@ -58,7 +58,7 @@ const fmt = (u: number | null) => (u === null ? '—' : `${u.toFixed(2)}%`)
 
     <IncidentList :incidents="history" />
 
-    <footer v-if="data">Updated {{ new Date(data.generatedAt).toLocaleTimeString() }} · 90 days</footer>
+    <footer v-if="data">Updated {{ new Date(data.generatedAt).toLocaleTimeString() }} · 90 days · <a href="/feed.xml">RSS</a></footer>
   </main>
 </template>
 
