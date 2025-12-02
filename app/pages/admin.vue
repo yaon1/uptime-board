@@ -29,6 +29,26 @@ async function remove(m: Monitor) {
   monitors.value = monitors.value.filter((x) => x.id !== m.id)
 }
 
+async function download() {
+  const data = await api<object>('/api/export')
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
+  Object.assign(document.createElement('a'), { href: url, download: 'uptime-board-monitors.json' }).click()
+  URL.revokeObjectURL(url)
+}
+
+const notice = ref('')
+async function upload(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  try {
+    const result = await api<{ created: number; skipped: string[] }>('/api/import', { method: 'POST', body: JSON.parse(await file.text()) })
+    notice.value = `Imported ${result.created}${result.skipped.length ? `, skipped existing: ${result.skipped.join(', ')}` : ''}`
+    await load()
+  } catch (e) {
+    notice.value = (e as { data?: { statusMessage?: string } }).data?.statusMessage ?? 'Import failed: not a valid export file'
+  }
+}
+
 onMounted(() => token.value && load())
 </script>
 
@@ -65,6 +85,11 @@ onMounted(() => token.value && load())
         </tbody>
       </table>
       <p v-else>No monitors yet.</p>
+      <section class="transfer">
+        <button @click="download">Export JSON</button>
+        <label class="import">Import JSON <input type="file" accept="application/json" @change="upload" /></label>
+        <span v-if="notice" role="status">{{ notice }}</span>
+      </section>
     </template>
   </main>
 </template>
@@ -82,6 +107,8 @@ button { cursor: pointer; }
 table { width: 100%; border-collapse: collapse; margin-top: 24px; }
 th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
 .target { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.transfer { display: flex; gap: 12px; align-items: center; margin-top: 24px; color: var(--muted); }
+.import input { display: block; margin-top: 4px; }
 .actions { display: flex; gap: 6px; justify-content: flex-end; }
 tr.paused td:not(.actions) { opacity: 0.5; }
 @media (max-width: 640px) { .target, th:nth-child(3) { display: none; } }
