@@ -1,7 +1,7 @@
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { probeHttp, probeTcp, statusMatcher } from '../server/utils/probe'
+import { probeDns, probeHttp, probeTcp, statusMatcher } from '../server/utils/probe'
 
 let server: Server
 let port: number
@@ -62,5 +62,17 @@ describe('HTTP expectations', () => {
 
   it('fails on unexpected status codes', async () => {
     expect(await probeHttp(`http://127.0.0.1:${port}/`, 1000, { status: '201' })).toMatchObject({ ok: false, detail: 'HTTP 200' })
+  })
+})
+
+describe('probeDns', () => {
+  it('resolves names and checks the expected address', async () => {
+    expect((await probeDns('localhost', 2000)).ok).toBe(true)
+    expect(await probeDns('localhost=127.0.0.1', 2000)).toMatchObject({ ok: true })
+    expect(await probeDns('localhost=10.9.9.9', 2000)).toMatchObject({ ok: false, detail: expect.stringContaining('expected 10.9.9.9') })
+  })
+
+  it('fails for names that do not exist', async () => {
+    expect((await probeDns('does-not-exist.invalid', 3000)).ok).toBe(false)
   })
 })

@@ -1,3 +1,4 @@
+import { lookup as dnsLookup } from 'node:dns/promises'
 import { connect } from 'node:net'
 import { connect as tlsConnect } from 'node:tls'
 
@@ -86,4 +87,26 @@ export function certificateExpiry(url: string, timeoutMs = 5000): Promise<Date |
       resolve(null)
     })
   })
+}
+
+/**
+ * Resolves a hostname through the system resolver. Target "host" just needs an answer;
+ * "host=1.2.3.4" additionally requires that address among the results (catches hijacked
+ * or forgotten DNS records after a migration).
+ */
+export async function probeDns(target: string, timeoutMs: number): Promise<ProbeResult> {
+  const [host, expected] = target.split('=') as [string, string | undefined]
+  const started = performance.now()
+  try {
+    const answers = await Promise.race([
+      dnsLookup(host, { all: true }),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`Timeout after ${timeoutMs} ms`)), timeoutMs)),
+    ])
+    const addresses = answers.map((a) => a.address)
+    const latencyMs = Math.round(performance.now() - started)
+    if (expected && !addresses.includes(expected)) return { ok: false, latencyMs, detail: `Resolved to ${addresses.join(', ')}, expected ${expected}` }
+    return { ok: true, latencyMs, detail: addresses.join(', ') }
+  } catch (error) {
+    return { ok: false, latencyMs: null, detail: describe(error) }
+  }
 }
