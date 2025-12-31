@@ -1,7 +1,7 @@
 import { statusMatcher } from './probe'
 import type { MonitorType, NewMonitor } from './monitors'
 
-const TYPES: MonitorType[] = ['http', 'tcp', 'heartbeat']
+const TYPES: MonitorType[] = ['http', 'tcp', 'heartbeat', 'dns']
 
 export class ValidationError extends Error {}
 
@@ -29,6 +29,7 @@ export function validateMonitor(body: Record<string, unknown> | null | undefined
   }
   if (out.type === 'http' && !/^https?:\/\/\S+$/.test(out.target ?? '')) throw new ValidationError('http target must be a URL')
   if (out.type === 'tcp' && !/^.+:\d{1,5}$/.test(out.target ?? '')) throw new ValidationError('tcp target must be host:port')
+  if (out.type === 'dns' && !/^[a-z0-9.-]+(=[0-9a-f.:]+)?$/i.test(out.target ?? '')) throw new ValidationError('dns target must be a hostname, optionally hostname=expected-ip')
 
   if (input.interval_s !== undefined || !partial) {
     const interval = Number(input.interval_s ?? 60)

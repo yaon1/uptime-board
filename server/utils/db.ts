@@ -6,7 +6,7 @@ const MIGRATIONS = [
   `CREATE TABLE monitors (
      id INTEGER PRIMARY KEY,
      name TEXT NOT NULL,
-     type TEXT NOT NULL CHECK (type IN ('http', 'tcp', 'heartbeat')),
+     type TEXT NOT NULL,
      target TEXT NOT NULL,
      interval_s INTEGER NOT NULL DEFAULT 60,
      timeout_ms INTEGER NOT NULL DEFAULT 10000,

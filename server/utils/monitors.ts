@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import type { DatabaseSync } from 'node:sqlite'
 
-export type MonitorType = 'http' | 'tcp' | 'heartbeat'
+export type MonitorType = 'http' | 'tcp' | 'heartbeat' | 'dns'
 
 export interface Monitor {
   id: number

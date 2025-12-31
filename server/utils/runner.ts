@@ -2,13 +2,14 @@ import type { DatabaseSync } from 'node:sqlite'
 import { inMaintenance } from './maintenance'
 import { dueMonitors, lastCheck, recordCheck, type Monitor } from './monitors'
 import type { Notifier } from './notify'
-import { probeHttp, probeTcp, type ProbeResult } from './probe'
+import { probeDns, probeHttp, probeTcp, type ProbeResult } from './probe'
 
 export type Prober = (monitor: Monitor) => Promise<ProbeResult>
 
 export const defaultProber: Prober = (m) => {
   if (m.type === 'http') return probeHttp(m.target, m.timeout_ms, { status: m.expect_status, keyword: m.expect_keyword })
   if (m.type === 'tcp') return probeTcp(m.target, m.timeout_ms)
+  if (m.type === 'dns') return probeDns(m.target, m.timeout_ms)
   throw new Error('Heartbeats are not probed')
 }
 

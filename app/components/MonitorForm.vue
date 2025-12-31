@@ -26,9 +26,9 @@ async function submit() {
   <form class="monitor-form" @submit.prevent="submit">
     <label>Name <input v-model="form.name" required maxlength="100" /></label>
     <label>Type
-      <select v-model="form.type"><option value="http">HTTP</option><option value="tcp">TCP</option><option value="heartbeat">Heartbeat</option></select>
+      <select v-model="form.type"><option value="http">HTTP</option><option value="tcp">TCP</option><option value="heartbeat">Heartbeat</option><option value="dns">DNS</option></select>
     </label>
-    <label v-if="form.type !== 'heartbeat'">Target <input v-model="form.target" :placeholder="form.type === 'http' ? 'https://example.com' : 'db.internal:5432'" required /></label>
+    <label v-if="form.type !== 'heartbeat'">Target <input v-model="form.target" :placeholder="{ http: 'https://example.com', tcp: 'db.internal:5432', dns: 'example.com=93.184.215.14' }[form.type]" required /></label>
     <label>Every, s <input v-model.number="form.interval_s" type="number" min="30" /></label>
     <label v-if="form.type === 'http'">Must contain <input v-model="form.expect_keyword" placeholder="optional" /></label>
     <label>Alert after <input v-model.number="form.alert_after" type="number" min="1" max="10" /></label>

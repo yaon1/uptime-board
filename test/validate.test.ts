@@ -32,4 +32,9 @@ describe('validateMonitor', () => {
     expect(validateMonitor({ expect_status: '200-299', expect_keyword: 'OK' }, true)).toEqual({ expect_status: '200-299', expect_keyword: 'OK' })
     expect(() => validateMonitor({ expect_status: 'all' }, true)).toThrow(/expect_status/)
   })
+
+  it('validates DNS targets', () => {
+    expect(validateMonitor({ name: 'mx', type: 'dns', target: 'mail.acme.dev=203.0.113.7' })).toMatchObject({ type: 'dns' })
+    expect(() => validateMonitor({ name: 'mx', type: 'dns', target: 'https://acme.dev' })).toThrow(/dns target/)
+  })
 })
