@@ -1,7 +1,7 @@
 import { beforeEach, expect, it } from 'vitest'
 import type { DatabaseSync } from 'node:sqlite'
 import { openDatabase } from '../server/utils/db'
-import { createMonitor, dueMonitors, findHeartbeat, lastCheck, pruneChecks, recordCheck, updateMonitor } from '../server/utils/monitors'
+import { createMonitor, dueMonitors, listMonitors, findHeartbeat, lastCheck, pruneChecks, recordCheck, updateMonitor } from '../server/utils/monitors'
 
 let db: DatabaseSync
 beforeEach(() => (db = openDatabase(':memory:')))
@@ -37,4 +37,12 @@ it('updates fields and skips paused monitors when scheduling', () => {
   expect(dueMonitors(db, 10_000_000)).toEqual([])
   updateMonitor(db, m.id, { paused: false })
   expect(dueMonitors(db, 10_000_000).map((d) => d.id)).toEqual([m.id])
+})
+
+it('orders grouped monitors first, by group then name', () => {
+  createMonitor(db, { name: 'zeta', type: 'heartbeat' })
+  createMonitor(db, { name: 'b', type: 'heartbeat', group_name: 'API' })
+  createMonitor(db, { name: 'a', type: 'heartbeat', group_name: 'Web' })
+  createMonitor(db, { name: 'a', type: 'heartbeat', group_name: 'API' })
+  expect(listMonitors(db).map((m) => `${m.group_name}/${m.name}`)).toEqual(['API/a', 'API/b', 'Web/a', 'null/zeta'])
 })

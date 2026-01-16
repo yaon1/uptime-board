@@ -57,6 +57,11 @@ export function validateMonitor(body: Record<string, unknown> | null | undefined
     if (!Number.isInteger(n) || n < 1 || n > 10) throw new ValidationError('alert_after must be between 1 and 10')
     out.alert_after = n
   }
+  if (input.group_name !== undefined) {
+    const g = typeof input.group_name === 'string' ? input.group_name.trim() : ''
+    if (g.length > 50) throw new ValidationError('group_name must be at most 50 characters')
+    out.group_name = g || null
+  }
   if (input.expect_keyword !== undefined) {
     out.expect_keyword = typeof input.expect_keyword === 'string' && input.expect_keyword !== '' ? input.expect_keyword : null
   }

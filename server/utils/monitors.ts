@@ -23,6 +23,8 @@ export interface Monitor {
   cert_checked_at: number | null
   /** Expiry we already warned about, so each certificate triggers one warning. */
   cert_warned_for: number | null
+  /** Section on the status page, e.g. "API" or "Websites"; null = ungrouped. */
+  group_name: string | null
 }
 
 export interface Check {
@@ -41,6 +43,7 @@ export interface NewMonitor {
   expect_status?: string | null
   expect_keyword?: string | null
   alert_after?: number
+  group_name?: string | null
 }
 
 export function createMonitor(db: DatabaseSync, input: NewMonitor, now = Date.now()): Monitor {
@@ -49,6 +52,7 @@ export function createMonitor(db: DatabaseSync, input: NewMonitor, now = Date.no
     .prepare('INSERT INTO monitors (name, type, target, interval_s, timeout_ms, expect_status, expect_keyword, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
     .run(input.name, input.type, target, input.interval_s ?? 60, input.timeout_ms ?? 10_000, input.expect_status ?? null, input.expect_keyword ?? null, now)
   if (input.alert_after !== undefined) db.prepare('UPDATE monitors SET alert_after = ? WHERE id = ?').run(input.alert_after, Number(lastInsertRowid))
+  if (input.group_name) db.prepare('UPDATE monitors SET group_name = ? WHERE id = ?').run(input.group_name, Number(lastInsertRowid))
   return getMonitor(db, Number(lastInsertRowid))!
 }
 
@@ -57,7 +61,7 @@ export function getMonitor(db: DatabaseSync, id: number): Monitor | undefined {
 }
 
 export function listMonitors(db: DatabaseSync): Monitor[] {
-  return db.prepare('SELECT * FROM monitors ORDER BY name').all() as unknown as Monitor[]
+  return db.prepare('SELECT * FROM monitors ORDER BY group_name IS NULL, group_name, name').all() as unknown as Monitor[]
 }
 
 export function updateMonitor(db: DatabaseSync, id: number, changes: Partial<NewMonitor> & { paused?: boolean }): Monitor | undefined {
@@ -69,6 +73,7 @@ export function updateMonitor(db: DatabaseSync, id: number, changes: Partial<New
     expect_status: changes.expect_status,
     expect_keyword: changes.expect_keyword,
     alert_after: changes.alert_after,
+    group_name: changes.group_name,
     paused: changes.paused === undefined ? undefined : changes.paused ? 1 : 0,
   }).filter(([, v]) => v !== undefined)
   if (columns.length > 0) {

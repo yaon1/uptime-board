@@ -21,6 +21,7 @@ export function exportMonitors(db: DatabaseSync): ExportFile {
       expect_status: m.expect_status,
       expect_keyword: m.expect_keyword,
       alert_after: m.alert_after,
+      group_name: m.group_name,
       paused: Boolean(m.paused),
     })),
   }
