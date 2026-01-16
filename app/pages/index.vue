@@ -24,6 +24,12 @@ const banner = computed(() => {
   }
 })
 
+const sections = computed(() => {
+  const groups = new Map<string | null, NonNullable<typeof data.value>['monitors']>()
+  for (const m of data.value?.monitors ?? []) groups.set(m.group, [...(groups.get(m.group) ?? []), m])
+  return [...groups].map(([name, monitors]) => ({ name, monitors }))
+})
+
 const fmt = (u: number | null) => (u === null ? '—' : `${u.toFixed(2)}%`)
 </script>
 
@@ -39,8 +45,10 @@ const fmt = (u: number | null) => (u === null ? '—' : `${u.toFixed(2)}%`)
 
     <p v-if="!data?.monitors.length" class="empty">No monitors yet. Add one through the admin API.</p>
 
+    <template v-for="section in sections" :key="section.name ?? '_'">
+    <h2 v-if="section.name" class="group">{{ section.name }}</h2>
     <ul class="monitors">
-      <li v-for="m in data?.monitors" :key="m.id" class="monitor">
+      <li v-for="m in section.monitors" :key="m.id" class="monitor">
         <div class="row">
           <span class="dot" :class="m.status" :aria-label="m.status" />
           <strong class="name">{{ m.name }}</strong>
@@ -55,6 +63,7 @@ const fmt = (u: number | null) => (u === null ? '—' : `${u.toFixed(2)}%`)
         <p v-if="m.status === 'down'" class="detail">{{ m.detail }}</p>
       </li>
     </ul>
+    </template>
 
     <IncidentList :incidents="history" />
 
@@ -70,6 +79,8 @@ h1 { font-size: 28px; margin: 0 0 20px; }
 .banner.partial { background: var(--partial); }
 .banner.down { background: var(--down); }
 .maintenance { margin: -12px 0 24px; padding: 10px 14px; border-radius: 10px; border: 1px dashed var(--partial); color: var(--text); font-size: 14px; }
+.group { font-size: 15px; color: var(--muted); margin: 24px 0 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+.monitors + .group { margin-top: 28px; }
 .monitors { list-style: none; padding: 0; margin: 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
 .monitor { padding: 16px 18px; border-bottom: 1px solid var(--border); }
 .monitor:last-child { border-bottom: 0; }

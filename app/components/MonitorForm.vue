@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const emit = defineEmits<{ created: [monitor: never] }>()
 const { api } = useAdmin()
-const form = reactive({ name: '', type: 'http', target: '', interval_s: 60, expect_keyword: '', alert_after: 1 })
+const form = reactive({ group_name: '', name: '', type: 'http', target: '', interval_s: 60, expect_keyword: '', alert_after: 1 })
 const error = ref('')
 const pingUrl = ref('')
 
@@ -25,6 +25,7 @@ async function submit() {
 <template>
   <form class="monitor-form" @submit.prevent="submit">
     <label>Name <input v-model="form.name" required maxlength="100" /></label>
+    <label>Group <input v-model="form.group_name" placeholder="optional" maxlength="50" /></label>
     <label>Type
       <select v-model="form.type"><option value="http">HTTP</option><option value="tcp">TCP</option><option value="heartbeat">Heartbeat</option><option value="dns">DNS</option></select>
     </label>
