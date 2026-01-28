@@ -10,7 +10,9 @@ export default defineNuxtConfig({
     slackWebhookUrl: '',
     webhookUrl: '',
     webhookSecret: '',
-    public: { title: 'Status' },
+    /** Days of check history to keep. */
+    retentionDays: 90,
+    public: { title: 'Status', description: '' },
   },
   nitro: {
     experimental: { tasks: true },

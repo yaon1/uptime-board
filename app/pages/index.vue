@@ -1,14 +1,14 @@
 <script setup lang="ts">
 
 
-const { title } = useRuntimeConfig().public
+const { title, description } = useRuntimeConfig().public
 const { data, refresh } = await useFetch('/api/status')
 const { data: history, refresh: refreshHistory } = await useFetch('/api/incidents', { default: () => [] })
 const { data: maintenance } = await useFetch('/api/maintenance', { default: () => [] })
 const range = (m: { starts_at: number; ends_at: number }) =>
   `${new Date(m.starts_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })} – ${new Date(m.ends_at).toLocaleTimeString(undefined, { timeStyle: 'short' })}`
 
-useHead({ title, link: [{ rel: 'alternate', type: 'application/rss+xml', title: 'Incidents', href: '/feed.xml' }] })
+useHead({ title, meta: description ? [{ name: 'description', content: description }] : [], link: [{ rel: 'alternate', type: 'application/rss+xml', title: 'Incidents', href: '/feed.xml' }] })
 let timer: ReturnType<typeof setInterval> | undefined
 onMounted(() => (timer = setInterval(() => (refresh(), refreshHistory()), 30_000)))
 onBeforeUnmount(() => clearInterval(timer))
@@ -36,6 +36,7 @@ const fmt = (u: number | null) => (u === null ? '—' : `${u.toFixed(2)}%`)
 <template>
   <main>
     <h1>{{ title }}</h1>
+    <p v-if="description" class="description">{{ description }}</p>
 
     <div class="banner" :class="banner.cls" role="status">{{ banner.text }}</div>
 
@@ -74,6 +75,7 @@ const fmt = (u: number | null) => (u === null ? '—' : `${u.toFixed(2)}%`)
 <style scoped>
 main { max-width: 760px; margin: 0 auto; padding: 32px 16px; }
 h1 { font-size: 28px; margin: 0 0 20px; }
+.description { margin: -12px 0 20px; color: var(--muted); }
 .banner { padding: 14px 18px; border-radius: 10px; color: #fff; font-weight: 600; margin-bottom: 24px; }
 .banner.up { background: var(--up); }
 .banner.partial { background: var(--partial); }
