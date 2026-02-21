@@ -29,6 +29,13 @@ async function remove(m: Monitor) {
   monitors.value = monitors.value.filter((x) => x.id !== m.id)
 }
 
+async function downloadCsv(m: Monitor) {
+  const csv = await api<string>(`/api/monitors/${m.id}/checks.csv`)
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+  Object.assign(document.createElement('a'), { href: url, download: `${m.name}-checks.csv` }).click()
+  URL.revokeObjectURL(url)
+}
+
 async function download() {
   const data = await api<object>('/api/export')
   const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
@@ -78,6 +85,7 @@ onMounted(() => token.value && load())
             <td class="target">{{ m.type === 'heartbeat' ? '/api/ping/…' : m.target }}</td>
             <td>{{ m.interval_s }} s</td>
             <td class="actions">
+              <button @click="downloadCsv(m)">CSV</button>
               <button @click="togglePause(m)">{{ m.paused ? 'Resume' : 'Pause' }}</button>
               <button class="danger" @click="remove(m)">Delete</button>
             </td>
