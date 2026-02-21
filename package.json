@@ -11,14 +11,21 @@
     "start": "node .output/server/index.mjs",
     "test": "vitest run",
     "typecheck": "nuxt typecheck",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "nuxt": "^4.5.2",
     "vue": "^3.5.44"
   },
   "devDependencies": {
+    "@nuxt/eslint-config": "^1.17.0",
     "@types/node": "^22.20.5",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.10",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7",
     "vue-tsc": "^3.3.13"
