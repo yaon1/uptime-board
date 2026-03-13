@@ -35,7 +35,7 @@ export function importMonitors(db: DatabaseSync, file: unknown): { created: numb
     try {
       return validateMonitor(m as Record<string, unknown>) as NewMonitor
     } catch (e) {
-      throw new Error(`monitor #${i + 1}: ${(e as Error).message}`)
+      throw new Error(`monitor #${i + 1}: ${(e as Error).message}`, { cause: e })
     }
   })
   const existing = new Set(listMonitors(db).map((m) => m.name))
