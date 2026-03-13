@@ -67,7 +67,7 @@ onMounted(() => token.value && load())
       <button v-if="token" class="link" @click="setToken('')">Sign out</button>
     </header>
 
-    <form v-if="!token" class="login" @submit.prevent="setToken(draftToken), load()">
+    <form v-if="!token" class="login" @submit.prevent="(setToken(draftToken), load())">
       <label>Admin token <input v-model="draftToken" type="password" autocomplete="current-password" required /></label>
       <button>Sign in</button>
     </form>
@@ -77,7 +77,15 @@ onMounted(() => token.value && load())
     <template v-if="token && !error">
       <MonitorForm @created="(m: Monitor) => monitors.push(m)" />
       <table v-if="monitors.length">
-        <thead><tr><th>Name</th><th>Type</th><th>Target</th><th>Every</th><th /></tr></thead>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Target</th>
+            <th>Every</th>
+            <th />
+          </tr>
+        </thead>
         <tbody>
           <tr v-for="m in monitors" :key="m.id" :class="{ paused: m.paused }">
             <td>{{ m.name }}</td>
@@ -103,21 +111,89 @@ onMounted(() => token.value && load())
 </template>
 
 <style scoped>
-.admin { max-width: 900px; margin: 0 auto; padding: 32px 16px; }
-header { display: flex; align-items: baseline; gap: 16px; }
-header h1 { margin-right: auto; }
-.login { display: flex; gap: 8px; align-items: end; }
-input, button { font: inherit; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); }
-button { cursor: pointer; }
-.link { border: 0; background: none; color: var(--muted); text-decoration: underline; }
-.danger { color: var(--down); }
-.error { color: var(--down); }
-table { width: 100%; border-collapse: collapse; margin-top: 24px; }
-th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
-.target { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
-.transfer { display: flex; gap: 12px; align-items: center; margin-top: 24px; color: var(--muted); }
-.import input { display: block; margin-top: 4px; }
-.actions { display: flex; gap: 6px; justify-content: flex-end; }
-tr.paused td:not(.actions) { opacity: 0.5; }
-@media (max-width: 640px) { .target, th:nth-child(3) { display: none; } }
+.admin {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+header h1 {
+  margin-right: auto;
+}
+.login {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+}
+input,
+button {
+  font: inherit;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+}
+button {
+  cursor: pointer;
+}
+.link {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  text-decoration: underline;
+}
+.danger {
+  color: var(--down);
+}
+.error {
+  color: var(--down);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+}
+th,
+td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.target {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.transfer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 24px;
+  color: var(--muted);
+}
+.import input {
+  display: block;
+  margin-top: 4px;
+}
+.actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+tr.paused td:not(.actions) {
+  opacity: 0.5;
+}
+@media (max-width: 640px) {
+  .target,
+  th:nth-child(3) {
+    display: none;
+  }
+}
 </style>

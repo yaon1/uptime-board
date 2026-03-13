@@ -49,9 +49,21 @@ export interface NewMonitor {
 export function createMonitor(db: DatabaseSync, input: NewMonitor, now = Date.now()): Monitor {
   const target = input.type === 'heartbeat' ? randomBytes(16).toString('hex') : (input.target ?? '')
   const { lastInsertRowid } = db
-    .prepare('INSERT INTO monitors (name, type, target, interval_s, timeout_ms, expect_status, expect_keyword, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-    .run(input.name, input.type, target, input.interval_s ?? 60, input.timeout_ms ?? 10_000, input.expect_status ?? null, input.expect_keyword ?? null, now)
-  if (input.alert_after !== undefined) db.prepare('UPDATE monitors SET alert_after = ? WHERE id = ?').run(input.alert_after, Number(lastInsertRowid))
+    .prepare(
+      'INSERT INTO monitors (name, type, target, interval_s, timeout_ms, expect_status, expect_keyword, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    )
+    .run(
+      input.name,
+      input.type,
+      target,
+      input.interval_s ?? 60,
+      input.timeout_ms ?? 10_000,
+      input.expect_status ?? null,
+      input.expect_keyword ?? null,
+      now,
+    )
+  if (input.alert_after !== undefined)
+    db.prepare('UPDATE monitors SET alert_after = ? WHERE id = ?').run(input.alert_after, Number(lastInsertRowid))
   if (input.group_name) db.prepare('UPDATE monitors SET group_name = ? WHERE id = ?').run(input.group_name, Number(lastInsertRowid))
   return getMonitor(db, Number(lastInsertRowid))!
 }
@@ -77,7 +89,10 @@ export function updateMonitor(db: DatabaseSync, id: number, changes: Partial<New
     paused: changes.paused === undefined ? undefined : changes.paused ? 1 : 0,
   }).filter(([, v]) => v !== undefined)
   if (columns.length > 0) {
-    db.prepare(`UPDATE monitors SET ${columns.map(([k]) => `${k} = ?`).join(', ')} WHERE id = ?`).run(...columns.map(([, v]) => v as string | number), id)
+    db.prepare(`UPDATE monitors SET ${columns.map(([k]) => `${k} = ?`).join(', ')} WHERE id = ?`).run(
+      ...columns.map(([, v]) => v as string | number),
+      id,
+    )
   }
   return getMonitor(db, id)
 }
@@ -86,14 +101,26 @@ export function deleteMonitor(db: DatabaseSync, id: number): boolean {
   return db.prepare('DELETE FROM monitors WHERE id = ?').run(id).changes > 0
 }
 
-export function recordCheck(db: DatabaseSync, monitorId: number, ok: boolean, latencyMs: number | null, detail: string, at = Date.now()): void {
-  db.prepare('INSERT INTO checks (monitor_id, at, ok, latency_ms, detail) VALUES (?, ?, ?, ?, ?)').run(monitorId, at, ok ? 1 : 0, latencyMs, detail)
+export function recordCheck(
+  db: DatabaseSync,
+  monitorId: number,
+  ok: boolean,
+  latencyMs: number | null,
+  detail: string,
+  at = Date.now(),
+): void {
+  db.prepare('INSERT INTO checks (monitor_id, at, ok, latency_ms, detail) VALUES (?, ?, ?, ?, ?)').run(
+    monitorId,
+    at,
+    ok ? 1 : 0,
+    latencyMs,
+    detail,
+  )
 }
 
 export function lastCheck(db: DatabaseSync, monitorId: number): Check | undefined {
   return db.prepare('SELECT at, ok, latency_ms, detail FROM checks WHERE monitor_id = ? ORDER BY at DESC LIMIT 1').get(monitorId) as
-    | Check
-    | undefined
+    Check | undefined
 }
 
 /** Monitors whose last check is older than their interval (heartbeats are judged separately). */

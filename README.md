@@ -40,31 +40,31 @@ curl -X POST localhost:3000/api/monitors -H "Authorization: Bearer $NUXT_ADMIN_T
 
 ## Типы проверок
 
-| Тип | `target` | Успех |
-|---|---|---|
-| `http` | URL | Ответ с кодом < 400 за `timeout_ms` |
-| `tcp` | `host:port` | TCP-соединение установлено |
+| Тип         | `target`     | Успех                                                          |
+| ----------- | ------------ | -------------------------------------------------------------- |
+| `http`      | URL          | Ответ с кодом < 400 за `timeout_ms`                            |
+| `tcp`       | `host:port`  | TCP-соединение установлено                                     |
 | `heartbeat` | генерируется | Пинг пришёл не позже `interval_s` + `timeout_ms` с предыдущего |
 
 Проверки запускаются каждую минуту, каждый монитор опрашивается с интервалом `interval_s` (от 30 с). История хранится 90 дней.
 
 ## Настройка
 
-| Переменная | |
-|---|---|
-| `NUXT_ADMIN_TOKEN` | Токен для admin API (обязательно) |
-| `NUXT_TELEGRAM_BOT_TOKEN`, `NUXT_TELEGRAM_CHAT_ID` | Куда слать алерты |
-| `NUXT_PUBLIC_TITLE` | Заголовок страницы статуса |
-| `NUXT_DATABASE_PATH` | Путь к SQLite (в Docker: `/data/uptime.sqlite`) |
+| Переменная                                         |                                                 |
+| -------------------------------------------------- | ----------------------------------------------- |
+| `NUXT_ADMIN_TOKEN`                                 | Токен для admin API (обязательно)               |
+| `NUXT_TELEGRAM_BOT_TOKEN`, `NUXT_TELEGRAM_CHAT_ID` | Куда слать алерты                               |
+| `NUXT_PUBLIC_TITLE`                                | Заголовок страницы статуса                      |
+| `NUXT_DATABASE_PATH`                               | Путь к SQLite (в Docker: `/data/uptime.sqlite`) |
 
 ## API
 
-| Метод | Путь | Доступ |
-|---|---|---|
-| `GET` | `/api/status` | публичный |
-| `GET` / `POST` | `/api/ping/:token` | по токену heartbeat |
-| `GET` / `POST` | `/api/monitors` | admin |
-| `DELETE` | `/api/monitors/:id` | admin |
+| Метод          | Путь                | Доступ              |
+| -------------- | ------------------- | ------------------- |
+| `GET`          | `/api/status`       | публичный           |
+| `GET` / `POST` | `/api/ping/:token`  | по токену heartbeat |
+| `GET` / `POST` | `/api/monitors`     | admin               |
+| `DELETE`       | `/api/monitors/:id` | admin               |
 
 ## Разработка
 

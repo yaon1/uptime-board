@@ -19,7 +19,11 @@ export default defineEventHandler((event) => {
   setHeader(event, 'cache-control', 'max-age=120')
   if (getQuery(event).metric === 'uptime') {
     const u = s.uptime30d
-    return badge(monitor.name, u === null ? 'n/a' : `${u.toFixed(2)}%`, u === null ? 'pending' : u >= 99.5 ? 'up' : u >= 95 ? 'degraded' : 'down')
+    return badge(
+      monitor.name,
+      u === null ? 'n/a' : `${u.toFixed(2)}%`,
+      u === null ? 'pending' : u >= 99.5 ? 'up' : u >= 95 ? 'degraded' : 'down',
+    )
   }
   return badge(monitor.name, s.status, s.status === 'up' ? 'up' : s.status === 'down' ? 'down' : 'pending')
 })

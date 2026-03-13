@@ -29,16 +29,19 @@ export function validateMonitor(body: Record<string, unknown> | null | undefined
   }
   if (out.type === 'http' && !/^https?:\/\/\S+$/.test(out.target ?? '')) throw new ValidationError('http target must be a URL')
   if (out.type === 'tcp' && !/^.+:\d{1,5}$/.test(out.target ?? '')) throw new ValidationError('tcp target must be host:port')
-  if (out.type === 'dns' && !/^[a-z0-9.-]+(=[0-9a-f.:]+)?$/i.test(out.target ?? '')) throw new ValidationError('dns target must be a hostname, optionally hostname=expected-ip')
+  if (out.type === 'dns' && !/^[a-z0-9.-]+(=[0-9a-f.:]+)?$/i.test(out.target ?? ''))
+    throw new ValidationError('dns target must be a hostname, optionally hostname=expected-ip')
 
   if (input.interval_s !== undefined || !partial) {
     const interval = Number(input.interval_s ?? 60)
-    if (!Number.isInteger(interval) || interval < 30 || interval > 86_400) throw new ValidationError('interval_s must be an integer between 30 and 86400')
+    if (!Number.isInteger(interval) || interval < 30 || interval > 86_400)
+      throw new ValidationError('interval_s must be an integer between 30 and 86400')
     out.interval_s = interval
   }
   if (input.timeout_ms !== undefined || !partial) {
     const timeout = Number(input.timeout_ms ?? 10_000)
-    if (!Number.isInteger(timeout) || timeout < 100 || timeout > 60_000) throw new ValidationError('timeout_ms must be between 100 and 60000')
+    if (!Number.isInteger(timeout) || timeout < 100 || timeout > 60_000)
+      throw new ValidationError('timeout_ms must be between 100 and 60000')
     out.timeout_ms = timeout
   }
   if (input.expect_status !== undefined) {

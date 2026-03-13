@@ -9,7 +9,10 @@ const path = computed(() => {
   if (points.length < 2) return ''
   const max = Math.max(...points.map((p) => p.avgMs), 1)
   return points
-    .map((p, i) => `${i === 0 ? 'M' : 'L'}${((i / (points.length - 1)) * width).toFixed(1)},${(height - (p.avgMs / max) * (height - 2) - 1).toFixed(1)}`)
+    .map(
+      (p, i) =>
+        `${i === 0 ? 'M' : 'L'}${((i / (points.length - 1)) * width).toFixed(1)},${(height - (p.avgMs / max) * (height - 2) - 1).toFixed(1)}`,
+    )
     .join(' ')
 })
 const last = computed(() => data.value.at(-1))
@@ -24,5 +27,8 @@ const last = computed(() => data.value.at(-1))
 </template>
 
 <style scoped>
-.spark { color: var(--muted); display: inline-flex; }
+.spark {
+  color: var(--muted);
+  display: inline-flex;
+}
 </style>

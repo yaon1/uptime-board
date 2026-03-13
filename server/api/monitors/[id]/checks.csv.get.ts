@@ -13,7 +13,10 @@ export default defineEventHandler((event) => {
 
   // Quote every text field; double inner quotes per RFC 4180.
   const quote = (v: string) => `"${v.replace(/"/g, '""')}"`
-  const lines = ['time,ok,latency_ms,detail', ...rows.map((r) => [new Date(r.at).toISOString(), r.ok, r.latency_ms ?? '', quote(r.detail ?? '')].join(','))]
+  const lines = [
+    'time,ok,latency_ms,detail',
+    ...rows.map((r) => [new Date(r.at).toISOString(), r.ok, r.latency_ms ?? '', quote(r.detail ?? '')].join(',')),
+  ]
   setHeader(event, 'content-type', 'text/csv; charset=utf-8')
   setHeader(event, 'content-disposition', `attachment; filename="${monitor.name.replace(/[^\w.-]+/g, '_')}-checks.csv"`)
   return lines.join('\n') + '\n'

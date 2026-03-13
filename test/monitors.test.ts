@@ -1,7 +1,16 @@
 import { beforeEach, expect, it } from 'vitest'
 import type { DatabaseSync } from 'node:sqlite'
 import { openDatabase } from '../server/utils/db'
-import { createMonitor, dueMonitors, listMonitors, findHeartbeat, lastCheck, pruneChecks, recordCheck, updateMonitor } from '../server/utils/monitors'
+import {
+  createMonitor,
+  dueMonitors,
+  listMonitors,
+  findHeartbeat,
+  lastCheck,
+  pruneChecks,
+  recordCheck,
+  updateMonitor,
+} from '../server/utils/monitors'
 
 let db: DatabaseSync
 beforeEach(() => (db = openDatabase(':memory:')))

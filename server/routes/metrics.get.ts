@@ -8,9 +8,18 @@ export default defineEventHandler((event) => {
     '# HELP uptime_monitor_up Whether the last check succeeded (1), failed (0); paused monitors are omitted.',
     '# TYPE uptime_monitor_up gauge',
   ]
-  const latency = ['# HELP uptime_monitor_latency_seconds Response time of the last successful check.', '# TYPE uptime_monitor_latency_seconds gauge']
-  const uptime = ['# HELP uptime_monitor_uptime_ratio Share of successful checks over the last 30 days.', '# TYPE uptime_monitor_uptime_ratio gauge']
-  const cert = ['# HELP uptime_monitor_cert_expiry_timestamp_seconds TLS certificate expiry.', '# TYPE uptime_monitor_cert_expiry_timestamp_seconds gauge']
+  const latency = [
+    '# HELP uptime_monitor_latency_seconds Response time of the last successful check.',
+    '# TYPE uptime_monitor_latency_seconds gauge',
+  ]
+  const uptime = [
+    '# HELP uptime_monitor_uptime_ratio Share of successful checks over the last 30 days.',
+    '# TYPE uptime_monitor_uptime_ratio gauge',
+  ]
+  const cert = [
+    '# HELP uptime_monitor_cert_expiry_timestamp_seconds TLS certificate expiry.',
+    '# TYPE uptime_monitor_cert_expiry_timestamp_seconds gauge',
+  ]
   const label = (s: string) => s.replace(/[\\"\n]/g, (c) => (c === '\n' ? '\\n' : `\\${c}`))
 
   for (const m of listMonitors(db)) {

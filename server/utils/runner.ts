@@ -35,7 +35,8 @@ export async function applyResult(db: DatabaseSync, monitor: Monitor, result: Pr
   // Planned work: keep recording checks for the history, but leave the alert state alone,
   // otherwise a failure inside the window would page "back UP" after it without a "DOWN".
   if (inMaintenance(db, monitor.id, now)) return
-  const alert = db.prepare('SELECT down, since FROM alerts WHERE monitor_id = ?').get(monitor.id) as { down: number; since: number } | undefined
+  const alert = db.prepare('SELECT down, since FROM alerts WHERE monitor_id = ?').get(monitor.id) as
+    { down: number; since: number } | undefined
 
   if (result.ok) {
     if (alert?.down) {
@@ -46,11 +47,15 @@ export async function applyResult(db: DatabaseSync, monitor: Monitor, result: Pr
   }
 
   if (alert?.down) return
-  const recent = db.prepare('SELECT ok FROM checks WHERE monitor_id = ? ORDER BY at DESC LIMIT ?').all(monitor.id, monitor.alert_after ?? 1) as { ok: number }[]
+  const recent = db
+    .prepare('SELECT ok FROM checks WHERE monitor_id = ? ORDER BY at DESC LIMIT ?')
+    .all(monitor.id, monitor.alert_after ?? 1) as { ok: number }[]
   if (recent.length >= (monitor.alert_after ?? 1) && recent.every((c) => !c.ok)) {
     // Downtime starts at the first failure of the streak, not at the alert.
-    const firstFailure = (lastFlip(db, monitor.id, 0) ?? now)
-    db.prepare('INSERT INTO alerts (monitor_id, down, since) VALUES (?, 1, ?) ON CONFLICT(monitor_id) DO UPDATE SET down = 1, since = excluded.since').run(monitor.id, firstFailure)
+    const firstFailure = lastFlip(db, monitor.id, 0) ?? now
+    db.prepare(
+      'INSERT INTO alerts (monitor_id, down, since) VALUES (?, 1, ?) ON CONFLICT(monitor_id) DO UPDATE SET down = 1, since = excluded.since',
+    ).run(monitor.id, firstFailure)
     await notify({ kind: 'down', monitor: monitor.name, detail: result.detail, at: now })
   }
 }

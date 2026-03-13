@@ -29,7 +29,10 @@ describe('validateMonitor', () => {
   })
 
   it('validates HTTP expectations', () => {
-    expect(validateMonitor({ expect_status: '200-299', expect_keyword: 'OK' }, true)).toEqual({ expect_status: '200-299', expect_keyword: 'OK' })
+    expect(validateMonitor({ expect_status: '200-299', expect_keyword: 'OK' }, true)).toEqual({
+      expect_status: '200-299',
+      expect_keyword: 'OK',
+    })
     expect(() => validateMonitor({ expect_status: 'all' }, true)).toThrow(/expect_status/)
   })
 

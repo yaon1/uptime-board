@@ -57,7 +57,10 @@ describe('HTTP expectations', () => {
 
   it('requires a keyword in the body', async () => {
     expect(await probeHttp(`http://127.0.0.1:${port}/page`, 1000, { keyword: 'Powered by Acme' })).toMatchObject({ ok: true })
-    expect(await probeHttp(`http://127.0.0.1:${port}/page`, 1000, { keyword: 'Error' })).toMatchObject({ ok: false, detail: 'HTTP 200, "Error" not found' })
+    expect(await probeHttp(`http://127.0.0.1:${port}/page`, 1000, { keyword: 'Error' })).toMatchObject({
+      ok: false,
+      detail: 'HTTP 200, "Error" not found',
+    })
   })
 
   it('fails on unexpected status codes', async () => {

@@ -34,7 +34,8 @@ export async function probeHttp(url: string, timeoutMs: number, expect: HttpExpe
     const body = expect.keyword ? await res.text() : (await res.body?.cancel(), '')
     const latencyMs = Math.round(performance.now() - started)
     if (!statusMatcher(expect.status)(res.status)) return { ok: false, latencyMs, detail: `HTTP ${res.status}` }
-    if (expect.keyword && !body.includes(expect.keyword)) return { ok: false, latencyMs, detail: `HTTP ${res.status}, "${expect.keyword}" not found` }
+    if (expect.keyword && !body.includes(expect.keyword))
+      return { ok: false, latencyMs, detail: `HTTP ${res.status}, "${expect.keyword}" not found` }
     return { ok: true, latencyMs, detail: `HTTP ${res.status}` }
   } catch (error) {
     return { ok: false, latencyMs: null, detail: describe(error) }
@@ -76,11 +77,14 @@ export function certificateExpiry(url: string, timeoutMs = 5000): Promise<Date |
   if (protocol !== 'https:') return Promise.resolve(null)
   return new Promise((resolve) => {
     // Read the certificate even if it's invalid: an expired cert is exactly what we want to report.
-    const socket = tlsConnect({ host: hostname, port: Number(port || 443), servername: hostname, rejectUnauthorized: false, timeout: timeoutMs }, () => {
-      const cert = socket.getPeerCertificate()
-      socket.end()
-      resolve(cert?.valid_to ? new Date(cert.valid_to) : null)
-    })
+    const socket = tlsConnect(
+      { host: hostname, port: Number(port || 443), servername: hostname, rejectUnauthorized: false, timeout: timeoutMs },
+      () => {
+        const cert = socket.getPeerCertificate()
+        socket.end()
+        resolve(cert?.valid_to ? new Date(cert.valid_to) : null)
+      },
+    )
     socket.once('error', () => resolve(null))
     socket.once('timeout', () => {
       socket.destroy()
@@ -104,7 +108,8 @@ export async function probeDns(target: string, timeoutMs: number): Promise<Probe
     ])
     const addresses = answers.map((a) => a.address)
     const latencyMs = Math.round(performance.now() - started)
-    if (expected && !addresses.includes(expected)) return { ok: false, latencyMs, detail: `Resolved to ${addresses.join(', ')}, expected ${expected}` }
+    if (expected && !addresses.includes(expected))
+      return { ok: false, latencyMs, detail: `Resolved to ${addresses.join(', ')}, expected ${expected}` }
     return { ok: true, latencyMs, detail: addresses.join(', ') }
   } catch (error) {
     return { ok: false, latencyMs: null, detail: describe(error) }

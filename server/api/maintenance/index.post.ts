@@ -5,7 +5,8 @@ export default defineEventHandler(async (event) => {
   const body = (await readBody<Record<string, unknown>>(event)) ?? {}
   const startsAt = Date.parse(String(body.starts_at ?? ''))
   const endsAt = Date.parse(String(body.ends_at ?? ''))
-  if (Number.isNaN(startsAt) || Number.isNaN(endsAt)) throw createError({ statusCode: 400, statusMessage: 'starts_at and ends_at must be ISO dates' })
+  if (Number.isNaN(startsAt) || Number.isNaN(endsAt))
+    throw createError({ statusCode: 400, statusMessage: 'starts_at and ends_at must be ISO dates' })
   try {
     setResponseStatus(event, 201)
     return scheduleMaintenance(useDatabase(), {

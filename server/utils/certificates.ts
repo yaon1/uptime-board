@@ -17,7 +17,9 @@ export async function checkCertificates(
   lookup: (url: string) => Promise<Date | null> = certificateExpiry,
 ): Promise<void> {
   const due = db
-    .prepare(`SELECT * FROM monitors WHERE type = 'http' AND paused = 0 AND target LIKE 'https://%' AND (cert_checked_at IS NULL OR cert_checked_at <= ?)`)
+    .prepare(
+      `SELECT * FROM monitors WHERE type = 'http' AND paused = 0 AND target LIKE 'https://%' AND (cert_checked_at IS NULL OR cert_checked_at <= ?)`,
+    )
     .all(now - DAY) as unknown as Monitor[]
 
   for (const m of due) {

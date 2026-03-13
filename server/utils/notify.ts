@@ -40,7 +40,11 @@ export function telegramNotifier(botToken: string, chatId: string): Notifier {
 
 /** Plain text without markup, for Slack and generic consumers. */
 export function formatPlain(event: AlertEvent): string {
-  return formatTelegram(event).replace(/<\/?b>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+  return formatTelegram(event)
+    .replace(/<\/?b>/g, '')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
 }
 
 /** Slack incoming webhook (also accepted by Mattermost and Rocket.Chat). */

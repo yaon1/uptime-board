@@ -22,10 +22,22 @@ function color(u: number | null): string {
 </template>
 
 <style scoped>
-.bars { display: flex; gap: 2px; height: 32px; }
-.bar { flex: 1; min-width: 2px; border-radius: 2px; }
-.bar:hover { opacity: 0.7; }
+.bars {
+  display: flex;
+  gap: 2px;
+  height: 32px;
+}
+.bar {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 2px;
+}
+.bar:hover {
+  opacity: 0.7;
+}
 @media (max-width: 600px) {
-  .bar:nth-child(-n + 60) { display: none; }
+  .bar:nth-child(-n + 60) {
+    display: none;
+  }
 }
 </style>

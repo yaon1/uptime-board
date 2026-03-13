@@ -11,11 +11,13 @@ const received: { path: string; body: string; headers: IncomingMessage['headers'
 beforeAll(async () => {
   server = createServer((req, res) => {
     let body = ''
-    req.on('data', (c) => (body += c)).on('end', () => {
-      received.push({ path: req.url ?? '', body, headers: req.headers })
-      res.statusCode = req.url === '/broken' ? 500 : 200
-      res.end()
-    })
+    req
+      .on('data', (c) => (body += c))
+      .on('end', () => {
+        received.push({ path: req.url ?? '', body, headers: req.headers })
+        res.statusCode = req.url === '/broken' ? 500 : 200
+        res.end()
+      })
   })
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', r))
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
@@ -43,5 +45,10 @@ it('signs webhook payloads', async () => {
 it('keeps notifying other channels when one fails', async () => {
   const before = received.length
   await combine(webhookNotifier(`${base}/broken`), slackNotifier(`${base}/slack2`))(down)
-  expect(received.slice(before).map((r) => r.path).sort()).toEqual(['/broken', '/slack2'])
+  expect(
+    received
+      .slice(before)
+      .map((r) => r.path)
+      .sort(),
+  ).toEqual(['/broken', '/slack2'])
 })

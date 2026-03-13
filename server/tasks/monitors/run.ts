@@ -3,7 +3,6 @@ import { pruneChecks } from '../../utils/monitors'
 import { runDueMonitors } from '../../utils/runner'
 import { configuredNotifier } from '../../utils/notify'
 
-
 export default defineTask({
   meta: { name: 'monitors:run', description: 'Probe due monitors and check heartbeats' },
   async run() {

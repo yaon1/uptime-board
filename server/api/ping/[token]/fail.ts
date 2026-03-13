@@ -16,6 +16,11 @@ export default defineEventHandler(async (event) => {
   if (!allow(monitor.target)) throw createError({ statusCode: 429, statusMessage: 'Too many pings; at most 6 per minute' })
 
   const message = String(getQuery(event).msg ?? '').slice(0, 200)
-  await applyResult(db, monitor, { ok: false, latencyMs: null, detail: message ? `Job reported failure: ${message}` : 'Job reported failure' }, configuredNotifier(useRuntimeConfig(event)))
+  await applyResult(
+    db,
+    monitor,
+    { ok: false, latencyMs: null, detail: message ? `Job reported failure: ${message}` : 'Job reported failure' },
+    configuredNotifier(useRuntimeConfig(event)),
+  )
   return { ok: true }
 })

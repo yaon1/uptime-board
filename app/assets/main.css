@@ -8,7 +8,11 @@
   --down: #e03131;
   --partial: #f08c00;
   --empty: #dee2e6;
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
   color-scheme: light dark;
 }
 
@@ -23,4 +27,8 @@
   }
 }
 
-body { margin: 0; background: var(--bg); color: var(--text); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}

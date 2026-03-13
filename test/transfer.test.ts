@@ -22,8 +22,14 @@ it('round-trips monitors and regenerates heartbeat tokens', () => {
 
 it('rejects the whole file when one monitor is invalid', () => {
   const db = openDatabase(':memory:')
-  expect(() => importMonitors(db, { version: 1, monitors: [{ name: 'ok', type: 'heartbeat' }, { name: 'bad', type: 'http', target: 'nope' }] })).toThrow(
-    'monitor #2: http target must be a URL',
-  )
+  expect(() =>
+    importMonitors(db, {
+      version: 1,
+      monitors: [
+        { name: 'ok', type: 'heartbeat' },
+        { name: 'bad', type: 'http', target: 'nope' },
+      ],
+    }),
+  ).toThrow('monitor #2: http target must be a URL')
   expect(listMonitors(db)).toEqual([])
 })

@@ -16,18 +16,41 @@ const when = (t: number) => new Date(t).toLocaleString(undefined, { dateStyle: '
       <li v-for="i in incidents" :key="`${i.monitor}-${i.start}`">
         <strong>{{ i.monitor }}</strong>
         <span :class="{ ongoing: i.end === null }">{{ i.end === null ? 'ongoing' : 'resolved' }}</span>
-        <div class="meta">{{ when(i.start) }} · {{ duration(i.durationMs) }}<template v-if="i.detail"> · {{ i.detail }}</template></div>
+        <div class="meta">
+          {{ when(i.start) }} · {{ duration(i.durationMs) }}<template v-if="i.detail"> · {{ i.detail }}</template>
+        </div>
       </li>
     </ol>
   </section>
 </template>
 
 <style scoped>
-.incidents { margin-top: 32px; }
-h2 { font-size: 18px; }
-ol { list-style: none; padding: 0; margin: 0; }
-li { padding: 10px 0; border-bottom: 1px solid var(--border); }
-li span { margin-left: 8px; font-size: 12px; color: var(--up); }
-li span.ongoing { color: var(--down); }
-.meta, .none { color: var(--muted); font-size: 13px; }
+.incidents {
+  margin-top: 32px;
+}
+h2 {
+  font-size: 18px;
+}
+ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+li span {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--up);
+}
+li span.ongoing {
+  color: var(--down);
+}
+.meta,
+.none {
+  color: var(--muted);
+  font-size: 13px;
+}
 </style>
