@@ -33,7 +33,7 @@ export function importMonitors(db: DatabaseSync, file: unknown): { created: numb
   if (data?.version !== 1 || !Array.isArray(data.monitors)) throw new Error('Expected an export file with version 1')
   const inputs = data.monitors.map((m, i) => {
     try {
-      return validateMonitor(m as Record<string, unknown>) as NewMonitor
+      return validateMonitor(m as unknown as Record<string, unknown>) as NewMonitor
     } catch (e) {
       throw new Error(`monitor #${i + 1}: ${(e as Error).message}`, { cause: e })
     }

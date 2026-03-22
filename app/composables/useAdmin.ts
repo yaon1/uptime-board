@@ -23,11 +23,11 @@ export function useAdmin() {
   }
 
   function api<T>(url: string, options: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown } = {}): Promise<T> {
-    return $fetch<T>(url, {
+    return $fetch(url, {
       method: options.method,
       body: options.body as Record<string, unknown>,
       headers: { authorization: `Bearer ${token.value}` },
-    })
+    }) as Promise<T>
   }
 
   return { token, setToken, api }
