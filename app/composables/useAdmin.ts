@@ -23,11 +23,10 @@ export function useAdmin() {
   }
 
   function api<T>(url: string, options: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown } = {}): Promise<T> {
-    return $fetch(url, {
-      method: options.method,
-      body: options.body as Record<string, unknown>,
-      headers: { authorization: `Bearer ${token.value}` },
-    }) as Promise<T>
+    // Nitro's typed routes make TypeScript compare every API route for a dynamic URL
+    // ("excessive stack depth"); a plain fetch signature avoids that.
+    const request = $fetch as unknown as (url: string, init: object) => Promise<T>
+    return request(url, { method: options.method, body: options.body, headers: { authorization: `Bearer ${token.value}` } })
   }
 
   return { token, setToken, api }
