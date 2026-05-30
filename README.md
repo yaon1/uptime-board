@@ -42,13 +42,23 @@ curl -X POST localhost:3000/api/monitors -H "Authorization: Bearer $NUXT_ADMIN_T
 
 ## Типы проверок
 
-| Тип         | `target`     | Успех                                                          |
-| ----------- | ------------ | -------------------------------------------------------------- |
-| `http`      | URL          | Ответ с кодом < 400 за `timeout_ms`                            |
-| `tcp`       | `host:port`  | TCP-соединение установлено                                     |
-| `heartbeat` | генерируется | Пинг пришёл не позже `interval_s` + `timeout_ms` с предыдущего |
+| Тип | `target` | Успех |
+|---|---|---|
+| `http` | URL | Код из `expect_status` (по умолчанию < 400) и, если задано, `expect_keyword` в теле |
+| `tcp` | `host:port` | TCP-соединение установлено |
+| `dns` | `host` или `host=1.2.3.4` | Имя резолвится (в ожидаемый адрес) |
+| `heartbeat` | генерируется | Пинг пришёл не позже `interval_s` + `timeout_ms`; задача может сама сообщить о сбое через `/fail` |
 
-Проверки запускаются каждую минуту, каждый монитор опрашивается с интервалом `interval_s` (от 30 с). История хранится 90 дней.
+Для `https`-мониторов раз в сутки проверяется срок сертификата; за 14 дней (`NUXT_CERT_WARN_DAYS`) приходит предупреждение.
+
+```bash
+# Слово «Оформить заказ» должно быть на странице, иначе это сбой, даже при 200
+curl -X POST localhost:3000/api/monitors -H "Authorization: Bearer $NUXT_ADMIN_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"name":"Магазин","group_name":"Сайты","type":"http","target":"https://shop.example","expect_keyword":"Оформить заказ","alert_after":2}'
+
+# В скрипте бэкапа: успех или явный сбой
+/opt/backup.sh && curl -fsS "$PING_URL" || curl -fsS "$PING_URL/fail?msg=backup+failed"
+```
 
 ## Настройка
 
