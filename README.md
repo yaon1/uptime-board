@@ -62,12 +62,16 @@ curl -X POST localhost:3000/api/monitors -H "Authorization: Bearer $NUXT_ADMIN_T
 
 ## Настройка
 
-| Переменная                                         |                                                 |
-| -------------------------------------------------- | ----------------------------------------------- |
-| `NUXT_ADMIN_TOKEN`                                 | Токен для admin API (обязательно)               |
-| `NUXT_TELEGRAM_BOT_TOKEN`, `NUXT_TELEGRAM_CHAT_ID` | Куда слать алерты                               |
-| `NUXT_PUBLIC_TITLE`                                | Заголовок страницы статуса                      |
-| `NUXT_DATABASE_PATH`                               | Путь к SQLite (в Docker: `/data/uptime.sqlite`) |
+| Переменная | |
+|---|---|
+| `NUXT_ADMIN_TOKEN` | Токен для admin API и страницы `/admin` (обязательно) |
+| `NUXT_TELEGRAM_BOT_TOKEN`, `NUXT_TELEGRAM_CHAT_ID` | Алерты в Telegram |
+| `NUXT_SLACK_WEBHOOK_URL` | Алерты в Slack (подходит и для Mattermost, Rocket.Chat) |
+| `NUXT_WEBHOOK_URL`, `NUXT_WEBHOOK_SECRET` | JSON-вебхук; с секретом тело подписывается в `X-Uptime-Signature: sha256=…` |
+| `NUXT_PUBLIC_TITLE`, `NUXT_PUBLIC_DESCRIPTION` | Заголовок и описание страницы статуса |
+| `NUXT_CERT_WARN_DAYS` | За сколько дней предупреждать об истечении сертификата (14) |
+| `NUXT_RETENTION_DAYS` | Сколько дней хранить историю проверок (90) |
+| `NUXT_DATABASE_PATH` | Путь к SQLite (в Docker: `/data/uptime.sqlite`) |
 
 ## API
 
