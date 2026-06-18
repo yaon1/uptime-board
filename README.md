@@ -75,12 +75,29 @@ curl -X POST localhost:3000/api/monitors -H "Authorization: Bearer $NUXT_ADMIN_T
 
 ## API
 
-| Метод          | Путь                | Доступ              |
-| -------------- | ------------------- | ------------------- |
-| `GET`          | `/api/status`       | публичный           |
-| `GET` / `POST` | `/api/ping/:token`  | по токену heartbeat |
-| `GET` / `POST` | `/api/monitors`     | admin               |
-| `DELETE`       | `/api/monitors/:id` | admin               |
+| Метод | Путь | Доступ |
+|---|---|---|
+| `GET` | `/api/status`, `/api/incidents`, `/api/maintenance` | публичный |
+| `GET` | `/api/monitors/:id/incidents`, `/api/monitors/:id/latency?hours=24` | публичный |
+| `GET` / `POST` | `/api/ping/:token`, `/api/ping/:token/fail?msg=…` | по токену heartbeat, не чаще 6 раз в минуту |
+| `GET` / `POST` | `/api/monitors` | admin |
+| `PATCH` / `DELETE` | `/api/monitors/:id` (в т.ч. `{"paused": true}`) | admin |
+| `GET` | `/api/monitors/:id/checks.csv?days=30` | admin |
+| `POST` / `DELETE` | `/api/maintenance`, `/api/maintenance/:id` | admin |
+| `GET` / `POST` | `/api/export`, `/api/import` | admin |
+
+## Интеграции
+
+| | |
+|---|---|
+| `/metrics` | Prometheus: `uptime_monitor_up`, `_latency_seconds`, `_uptime_ratio`, `_cert_expiry_timestamp_seconds` |
+| `/badge/:id.svg` | Бейдж статуса; `?metric=uptime` — аптайм за 30 дней |
+| `/feed.xml` | RSS инцидентов |
+| `/admin` | Веб-админка: добавление, пауза, удаление, CSV, экспорт и импорт |
+
+```markdown
+![API](https://status.example.com/badge/1.svg?metric=uptime)
+```
 
 ## Разработка
 
