@@ -99,6 +99,15 @@ curl -X POST localhost:3000/api/monitors -H "Authorization: Bearer $NUXT_ADMIN_T
 ![API](https://status.example.com/badge/1.svg?metric=uptime)
 ```
 
+## Плановые работы
+
+```bash
+curl -X POST localhost:3000/api/maintenance -H "Authorization: Bearer $NUXT_ADMIN_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"starts_at":"2026-11-01T02:00:00Z","ends_at":"2026-11-01T03:00:00Z","note":"Обновление базы"}'
+```
+
+Окно без `monitor_id` действует на все мониторы. На странице статуса появляется объявление; проверки идут и попадают в историю, но алерты не отправляются.
+
 ## Разработка
 
 ```bash
@@ -107,7 +116,7 @@ NUXT_ADMIN_TOKEN=dev npm run dev
 npm test
 ```
 
-Стек: Nuxt 4, Nitro scheduled tasks, `node:sqlite`, Vitest.
+Стек: Nuxt 4, Nitro scheduled tasks, `node:sqlite`, Vitest. Проверки: `npm run lint`, `npm run typecheck`, `npm test`.
 
 ## Лицензия
 
