@@ -14,7 +14,8 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "smoke": "bash scripts/smoke.sh"
   },
   "dependencies": {
     "nuxt": "^4.5.2",
