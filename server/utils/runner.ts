@@ -35,6 +35,8 @@ export async function applyResult(db: DatabaseSync, monitor: Monitor, result: Pr
   // Planned work: keep recording checks for the history, but leave the alert state alone,
   // otherwise a failure inside the window would page "back UP" after it without a "DOWN".
   if (inMaintenance(db, monitor.id, now)) return
+  // Muted monitors keep their alert state current, so unmuting doesn't fire stale alerts.
+  if (monitor.muted) notify = async () => {}
   const alert = db.prepare('SELECT down, since FROM alerts WHERE monitor_id = ?').get(monitor.id) as
     { down: number; since: number } | undefined
 

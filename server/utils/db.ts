@@ -57,6 +57,7 @@ const MIGRATIONS = [
    INSERT INTO monitors SELECT id, name, type, target, interval_s, timeout_ms, created_at, paused, expect_status, expect_keyword, alert_after, cert_expires_at, cert_checked_at, cert_warned_for FROM monitors_new;
    DROP TABLE monitors_new`,
   `ALTER TABLE monitors ADD COLUMN group_name TEXT`,
+  `ALTER TABLE monitors ADD COLUMN muted INTEGER NOT NULL DEFAULT 0`,
 ]
 
 /**

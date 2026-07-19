@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   if (body.paused !== undefined && typeof body.paused !== 'boolean')
     throw createError({ statusCode: 400, statusMessage: 'paused must be a boolean' })
 
-  const monitor = updateMonitor(useDatabase(), id, { ...changes, paused: body.paused as boolean | undefined })
+  const monitor = updateMonitor(useDatabase(), id, { ...changes, paused: body.paused as boolean | undefined, muted: body.muted as boolean | undefined })
   if (!monitor) throw createError({ statusCode: 404, statusMessage: 'Monitor not found' })
   return monitor
 })

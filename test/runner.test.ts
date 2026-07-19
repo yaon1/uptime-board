@@ -71,3 +71,13 @@ it('does not announce a recovery for an outage that happened during maintenance'
   await runDueMonitors(db, notify, async () => ({ ok: true, latencyMs: 1, detail: 'HTTP 200' }), 60_000)
   expect(sent).toEqual([])
 })
+
+it('records state but sends nothing for muted monitors', async () => {
+  const m = createMonitor(db, { name: 'Staging', type: 'http', target: 'https://x', interval_s: 60 }, 0)
+  updateMonitor(db, m.id, { muted: true })
+  await runDueMonitors(db, notify, async () => ({ ok: false, latencyMs: null, detail: 'HTTP 500' }), 0)
+  expect(sent).toEqual([])
+  updateMonitor(db, m.id, { muted: false })
+  await runDueMonitors(db, notify, async () => ({ ok: false, latencyMs: null, detail: 'HTTP 500' }), 60_000)
+  expect(sent).toEqual([])
+})

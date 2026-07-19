@@ -25,6 +25,8 @@ export interface Monitor {
   cert_warned_for: number | null
   /** Section on the status page, e.g. "API" or "Websites"; null = ungrouped. */
   group_name: string | null
+  /** 1 = keep checking and showing it, but don't send alerts (e.g. a known-flaky staging site). */
+  muted: number
 }
 
 export interface Check {
@@ -76,7 +78,7 @@ export function listMonitors(db: DatabaseSync): Monitor[] {
   return db.prepare('SELECT * FROM monitors ORDER BY group_name IS NULL, group_name, name').all() as unknown as Monitor[]
 }
 
-export function updateMonitor(db: DatabaseSync, id: number, changes: Partial<NewMonitor> & { paused?: boolean }): Monitor | undefined {
+export function updateMonitor(db: DatabaseSync, id: number, changes: Partial<NewMonitor> & { paused?: boolean; muted?: boolean }): Monitor | undefined {
   const columns = Object.entries({
     name: changes.name,
     target: changes.type === 'heartbeat' ? undefined : changes.target,
@@ -87,6 +89,7 @@ export function updateMonitor(db: DatabaseSync, id: number, changes: Partial<New
     alert_after: changes.alert_after,
     group_name: changes.group_name,
     paused: changes.paused === undefined ? undefined : changes.paused ? 1 : 0,
+    muted: changes.muted === undefined ? undefined : changes.muted ? 1 : 0,
   }).filter(([, v]) => v !== undefined)
   if (columns.length > 0) {
     db.prepare(`UPDATE monitors SET ${columns.map(([k]) => `${k} = ?`).join(', ')} WHERE id = ?`).run(
