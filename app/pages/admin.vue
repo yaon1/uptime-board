@@ -1,5 +1,5 @@
 <script setup lang="ts">
-type Monitor = { id: number; name: string; type: string; target: string; interval_s: number; paused: number; alert_after: number }
+type Monitor = { id: number; name: string; type: string; target: string; interval_s: number; paused: number; muted: number; alert_after: number }
 
 useHead({ title: 'Admin', meta: [{ name: 'robots', content: 'noindex' }] })
 const { token, setToken, api } = useAdmin()
@@ -21,6 +21,10 @@ async function load() {
 async function togglePause(m: Monitor) {
   const updated = await api<Monitor>(`/api/monitors/${m.id}`, { method: 'PATCH', body: { paused: !m.paused } })
   Object.assign(m, updated)
+}
+
+async function toggleMute(m: Monitor) {
+  Object.assign(m, await api<Monitor>(`/api/monitors/${m.id}`, { method: 'PATCH', body: { muted: !m.muted } }))
 }
 
 async function remove(m: Monitor) {
@@ -94,6 +98,7 @@ onMounted(() => token.value && load())
             <td>{{ m.interval_s }} s</td>
             <td class="actions">
               <button @click="downloadCsv(m)">CSV</button>
+              <button :aria-pressed="!!m.muted" @click="toggleMute(m)">{{ m.muted ? 'Unmute' : 'Mute' }}</button>
               <button @click="togglePause(m)">{{ m.paused ? 'Resume' : 'Pause' }}</button>
               <button class="danger" @click="remove(m)">Delete</button>
             </td>
