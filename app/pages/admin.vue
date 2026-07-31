@@ -1,5 +1,14 @@
 <script setup lang="ts">
-type Monitor = { id: number; name: string; type: string; target: string; interval_s: number; paused: number; muted: number; alert_after: number }
+type Monitor = {
+  id: number
+  name: string
+  type: string
+  target: string
+  interval_s: number
+  paused: number
+  muted: number
+  alert_after: number
+}
 
 useHead({ title: 'Admin', meta: [{ name: 'robots', content: 'noindex' }] })
 const { token, setToken, api } = useAdmin()
