@@ -1,0 +1,22 @@
+# uptime-board behind Caddy with automatic HTTPS. Set DOMAIN and NUXT_ADMIN_TOKEN in .env.
+services:
+  uptime:
+    image: ghcr.io/yaon1/uptime-board:latest
+    restart: unless-stopped
+    environment:
+      NUXT_ADMIN_TOKEN: ${NUXT_ADMIN_TOKEN:?set NUXT_ADMIN_TOKEN}
+      NUXT_PUBLIC_TITLE: ${TITLE:-Status}
+      NUXT_TELEGRAM_BOT_TOKEN: ${NUXT_TELEGRAM_BOT_TOKEN:-}
+      NUXT_TELEGRAM_CHAT_ID: ${NUXT_TELEGRAM_CHAT_ID:-}
+    volumes: ['uptime-data:/data']
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ['80:80', '443:443']
+    command: caddy reverse-proxy --from ${DOMAIN:?set DOMAIN} --to uptime:3000
+    volumes: ['caddy-data:/data']
+
+volumes:
+  uptime-data:
+  caddy-data:
