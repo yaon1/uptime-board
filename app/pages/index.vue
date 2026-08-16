@@ -21,8 +21,17 @@ useHead({
   link: [{ rel: 'alternate', type: 'application/rss+xml', title: 'Incidents', href: '/feed.xml' }],
 })
 let timer: ReturnType<typeof setInterval> | undefined
-onMounted(() => (timer = setInterval(() => (refresh(), refreshHistory()), 30_000)))
-onBeforeUnmount(() => clearInterval(timer))
+const reload = () => (refresh(), refreshHistory())
+// Skip polling while the tab is hidden and catch up as soon as it is visible again.
+const onVisibility = () => document.visibilityState === 'visible' && reload()
+onMounted(() => {
+  timer = setInterval(() => document.visibilityState === 'visible' && reload(), 30_000)
+  document.addEventListener('visibilitychange', onVisibility)
+})
+onBeforeUnmount(() => {
+  clearInterval(timer)
+  document.removeEventListener('visibilitychange', onVisibility)
+})
 
 const banner = computed(() => {
   switch (data.value?.overall) {
