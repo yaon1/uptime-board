@@ -108,6 +108,11 @@ curl -X POST localhost:3000/api/maintenance -H "Authorization: Bearer $NUXT_ADMI
 
 Окно без `monitor_id` действует на все мониторы. На странице статуса появляется объявление; проверки идут и попадают в историю, но алерты не отправляются.
 
+## Ещё
+
+- [Деплой, бэкапы, HTTPS](docs/deploy.md)
+- [Heartbeat для cron, systemd, Laravel, Kubernetes](docs/heartbeat-recipes.md)
+
 ## Разработка
 
 ```bash
