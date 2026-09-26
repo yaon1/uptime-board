@@ -13,8 +13,12 @@
 ## Пример использования
 
 ```bash
+docker run -d -p 3000:3000 -v uptime-data:/data -e NUXT_ADMIN_TOKEN=$(openssl rand -hex 16) ghcr.io/yaon1/uptime-board:0.2
+# или из исходников:
 NUXT_ADMIN_TOKEN=$(openssl rand -hex 16) docker compose up -d
 ```
+
+Мониторы удобно добавлять на странице `/admin`.
 
 Добавить проверку сайта и порта:
 
