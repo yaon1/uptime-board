@@ -17,4 +17,4 @@ docker compose exec uptime node -e "new (require('node:sqlite').DatabaseSync)('/
 ## Мониторинг самого мониторинга
 
 - `/metrics` подключите к Prometheus, а `uptime_monitor_up` — к Alertmanager как второй канал.
-- Создайте heartbeat-монитор и пингуйте его извне (например, cron на другом сервере): если сервер с uptime-board ляжет, вы узнаете об этом по отсутствию алертов… поэтому лучше пинговать внешний сервис вроде healthchecks.io с самого сервера.
+- Сам uptime-board не может сообщить о собственном падении. Пингуйте с его сервера внешний heartbeat-сервис (например, healthchecks.io) раз в минуту: если сервер ляжет, тревогу поднимет внешний сервис.
