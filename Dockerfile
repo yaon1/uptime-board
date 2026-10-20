@@ -1,11 +1,11 @@
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --ignore-scripts
 COPY . .
 RUN npx nuxt build
 
-FROM node:22-alpine
+FROM node:26-alpine
 WORKDIR /app
 ENV NODE_ENV=production NUXT_DATABASE_PATH=/data/uptime.sqlite PORT=3000
 LABEL org.opencontainers.image.source="https://github.com/yaon1/uptime-board" \
